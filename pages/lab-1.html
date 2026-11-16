@@ -1,28 +1,307 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lab 1 | Ghurir</title>
-  <link rel="stylesheet" href="../css/styles.css">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  <meta name="description"
+        content="Practice IDOR vulnerabilities in a safe interactive lab.">
+
+  <title>IDOR Lab | Ghurir</title>
+
+  <link rel="preconnect"
+        href="https://fonts.googleapis.com">
+  <link rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="../stylesheet/global.css">
+  <link rel="stylesheet" href="../stylesheet/styles.css">
+  <link rel="stylesheet" href="../stylesheet/labs.css">
+  <link rel="stylesheet" href="../stylesheet/footer.css">
+
+  <script src="../js/lab-1.js" defer></script>
 </head>
+
 <body>
+
   <header class="site-header">
-    <a class="brand" href="../index.html">Ghurir</a>
-    <nav aria-label="Primary navigation">
-      <a href="lab-1.html" aria-current="page">Lab 1</a>
-      <a href="lab-2.html">Lab 2</a>
-      <a href="lab-3.html">Lab 3</a>
+    <a class="brand" href="index.html">Ghurir</a>
+
+    <nav aria-label="Main navigation">
+      <a href="lab-1.html" aria-current="page">IDOR</a>
+      <a href="lab-2.html">Prototype Pollution</a>
+      <a href="lab-3.html">Race Condition</a>
     </nav>
   </header>
 
-  <main class="page-container lab-page">
-    <p class="eyebrow">Security lab 01</p>
-    <h1>Lab 1: Vulnerability title</h1>
-    <p class="placeholder">This lab is ready for its vulnerability explanation, code sample, payloads, impact, fix, and sources.</p>
+  <main>
+
+    <section class="lab-header">
+      <div class="container">
+
+        <a href="index.html#labs" class="back-link">
+          &larr; Back to Labs
+        </a>
+
+        <p class="eyebrow">Security Lab 01</p>
+
+        <h1>IDOR Vulnerability</h1>
+
+        <p class="lab-intro">
+          Learn how missing authorization checks can
+          expose another user's information.
+        </p>
+
+        <div class="lab-tags">
+          <span>OWASP A01: Broken Access Control</span>
+          <span>CWE-639</span>
+          <span>Interactive Simulation</span>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="container lab-layout">
+
+      <section class="lab-panel">
+        <h2>01. The Vulnerability</h2>
+
+        <p>
+          Insecure Direct Object Reference (IDOR) occurs
+          when an application allows users to access
+          resources by changing an identifier without
+          checking whether they are authorized to
+          access those resources.
+        </p>
+
+        <p>
+          In this simulation, Alice is the authenticated
+          user. The vulnerable application allows her
+          to retrieve other users' profiles simply by
+          changing the requested profile ID.
+        </p>
+      </section>
+
+      <section class="lab-panel">
+        <h2>02. The Vulnerable Code</h2>
+
+        <p>
+          The application retrieves a profile using a
+          user-controlled ID without checking ownership.
+        </p>
+
+        <div class="code-window">
+          <div class="code-header">
+            <span>vulnerable.js</span>
+            <span class="code-status vulnerable-status">
+              Vulnerable
+            </span>
+          </div>
+
+          <pre><code><span>const currentUser = { id: 1001 };</span>
+<span>const profiles = getProfiles();</span>
+<span>function getProfile(requestedId) {</span>
+<span>  const id = Number(requestedId);</span>
+<span>  if (!Number.isInteger(id)) {</span>
+<span>    return { status: 400 };</span>
+<span>  }</span>
+<span class="code-danger">  const profile = profiles[id];</span>
+<span>  if (!profile) {</span>
+<span>    return { status: 404 };</span>
+<span>  }</span>
+<span>  return { status: 200, profile };</span>
+<span>}</span></code></pre>
+        </div>
+
+        <p class="code-explanation">
+          <strong>Vulnerable line:</strong>
+          The profile is selected using the supplied ID
+          without verifying that it belongs to the
+          authenticated user.
+        </p>
+      </section>
+
+      <section class="lab-panel" id="simulation">
+        <h2>03. Try the Attack</h2>
+
+        <p>
+          You are logged in as Alice (ID: 1001).
+          Try requesting another user's profile.
+        </p>
+
+        <div class="simulation-toolbar">
+          <div>
+            <span class="field-label">Security Mode</span>
+            <span id="mode-status"
+                  class="mode-badge mode-vulnerable">
+              Vulnerable
+            </span>
+          </div>
+
+          <div class="mode-switch">
+            <button id="vulnerable-btn"
+                    class="mode-btn active"
+                    type="button"
+                    aria-pressed="true">
+              Vulnerable
+            </button>
+
+            <button id="fixed-btn"
+                    class="mode-btn"
+                    type="button"
+                    aria-pressed="false">
+              Fixed
+            </button>
+          </div>
+        </div>
+
+        <div class="simulation-box">
+
+          <div class="simulation-user">
+            <span class="field-label">Current User</span>
+            <strong>Alice — ID: 1001</strong>
+          </div>
+
+          <label for="profile-id" class="field-label">
+            Requested Profile ID
+          </label>
+
+          <input
+            type="number"
+            id="profile-id"
+            value="1001"
+            min="1"
+            step="1">
+
+          <p class="payload-label">
+            Select a payload:
+          </p>
+
+          <div class="payload-buttons">
+            <button type="button" data-profile="1001">
+              Own Profile
+            </button>
+
+            <button type="button" data-profile="1002">
+              Bob's Profile
+            </button>
+
+            <button type="button" data-profile="1003">
+              Charlie's Profile
+            </button>
+          </div>
+
+          <button type="button"
+                  id="run-payload"
+                  class="run-btn">
+            Run Payload
+          </button>
+
+          <div class="result-box" aria-live="polite">
+            <div class="result-heading">
+              <strong>Live Result</strong>
+              <span id="result-status">Ready</span>
+            </div>
+
+            <p id="result-message">
+              Select a profile and run the payload.
+            </p>
+
+            <pre id="result-data"></pre>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="lab-panel">
+        <h2>04. Why It Matters</h2>
+
+        <p>
+          IDOR can expose private records, personal
+          information, and resources belonging to other
+          users. Depending on the application, it may
+          also allow unauthorized modifications.
+        </p>
+      </section>
+
+      <section class="lab-panel" id="fix-section">
+        <h2>05. The Fix</h2>
+
+        <p>
+          The application must verify that the requested
+          resource belongs to the authenticated user
+          before returning it.
+        </p>
+
+        <div class="code-window">
+          <div class="code-header">
+            <span>fixed.js</span>
+            <span class="code-status fixed-status">
+              Fixed
+            </span>
+          </div>
+
+          <pre><code><span>const currentUser = { id: 1001 };</span>
+<span>const profiles = getProfiles();</span>
+<span>function getProfile(requestedId) {</span>
+<span>  const id = Number(requestedId);</span>
+<span>  if (!Number.isInteger(id)) {</span>
+<span>    return { status: 400 };</span>
+<span>  }</span>
+<span class="code-safe">  if (id !== currentUser.id) {</span>
+<span class="code-safe">    return { status: 403 };</span>
+<span class="code-safe">  }</span>
+<span>  const profile = profiles[id];</span>
+<span>  if (!profile) return { status: 404 };</span>
+<span>  return { status: 200, profile };</span>
+<span>}</span></code></pre>
+        </div>
+
+        <p class="code-explanation">
+          <strong>Fixed line:</strong>
+          The authorization check rejects requests for
+          profiles that do not belong to the current user.
+        </p>
+
+        <button type="button"
+                class="fix-action"
+                id="try-fixed">
+          Test the Fixed Version
+        </button>
+      </section>
+
+    </div>
+
   </main>
 
-  <script src="../js/app.js"></script>
-  <script src="../js/lab-1.js"></script>
+  <footer class="site-footer">
+    <div class="container footer-content">
+
+      <div class="footer-brand">
+        <h2>Ghurir</h2>
+        <p>Learn web security through practical labs.</p>
+      </div>
+
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="lab-1.html">IDOR</a>
+        <a href="lab-2.html">Prototype Pollution</a>
+        <a href="lab-3.html">Race Condition</a>
+      </nav>
+
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Ghurir. Web Security Labs.</p>
+    </div>
+  </footer>
+
 </body>
 </html>

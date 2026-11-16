@@ -21,25 +21,28 @@
     href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-<link rel="stylesheet" href="../stylesheet/global.css">
+  <link rel="stylesheet" href="../stylesheet/global.css">
+  <link rel="stylesheet" href="../stylesheet/labs.css">
   <link rel="stylesheet" href="../stylesheet/styles.css">
   <link rel="stylesheet" href="../stylesheet/footer.css">
 </head>
 
 <body>
 
+  <!-- Header -->
   <header class="site-header">
     <a class="brand" href="index.html">Ghurir</a>
 
     <nav aria-label="Main navigation">
-      <a href="labs/lab-1.html">IDOR</a>
-      <a href="labs/lab-2.html">Prototype Pollution</a>
-      <a href="labs/lab-3.html">Race Condition</a>
+      <a href="lab-1.html">IDOR</a>
+      <a href="lab-2.html">Prototype Pollution</a>
+      <a href="lab-3.html">Race Condition</a>
     </nav>
   </header>
 
   <main>
 
+    <!-- Hero Section -->
     <section class="hero">
       <div class="hero-content">
 
@@ -64,6 +67,7 @@
       </div>
     </section>
 
+    <!-- Labs Section -->
     <section id="labs" class="labs-section">
       <div class="container">
 
@@ -77,41 +81,55 @@
 
         <div class="labs-grid">
 
-          <a href="labs/lab-1.html" class="lab-card">
+          <!-- Lab 1: IDOR -->
+          <a href="lab-1.html" class="lab-card">
             <span class="lab-card__number">01</span>
+
             <h3>IDOR</h3>
+
             <p>
               Explore broken access control and learn
               how unauthorized users can access
               resources belonging to others.
             </p>
+
             <span class="lab-card__action">
               Open Lab &rarr;
             </span>
           </a>
 
-          <a href="labs/lab-2.html"
+          <!-- Lab 2: Prototype Pollution -->
+          <a href="lab-2.html"
              class="lab-card lab-card--featured">
+
             <span class="lab-card__number">02</span>
+
             <h3>Prototype Pollution</h3>
+
             <p>
               Discover how unsafe JavaScript object
               operations can affect shared prototypes
               and application behavior.
             </p>
+
             <span class="lab-card__action">
               Open Lab &rarr;
             </span>
           </a>
 
-          <a href="labs/lab-3.html" class="lab-card">
+          <!-- Lab 3: Race Condition -->
+          <a href="lab-3.html" class="lab-card">
+
             <span class="lab-card__number">03</span>
+
             <h3>Race Condition</h3>
+
             <p>
               Understand how simultaneous requests
               can cause unexpected behavior when
               operations are not synchronized.
             </p>
+
             <span class="lab-card__action">
               Open Lab &rarr;
             </span>
@@ -123,6 +141,7 @@
 
   </main>
 
+  <!-- Footer -->
   <footer class="site-footer">
     <div class="container footer-content">
 
@@ -133,9 +152,9 @@
 
       <nav class="footer-nav" aria-label="Footer navigation">
         <a href="index.html">Home</a>
-        <a href="labs/lab-1.html">IDOR</a>
-        <a href="labs/lab-2.html">Prototype Pollution</a>
-        <a href="labs/lab-3.html">Race Condition</a>
+        <a href="lab-1.html">IDOR</a>
+        <a href="lab-2.html">Prototype Pollution</a>
+        <a href="lab-3.html">Race Condition</a>
       </nav>
 
     </div>
