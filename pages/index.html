@@ -1,0 +1,149 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  <meta name="description"
+        content="Practice web security through interactive labs.">
+
+  <title>Ghurir | Web Security Labs</title>
+
+  <link rel="preconnect"
+        href="https://fonts.googleapis.com">
+  <link rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+<link rel="stylesheet" href="../stylesheet/global.css">
+  <link rel="stylesheet" href="../stylesheet/styles.css">
+  <link rel="stylesheet" href="../stylesheet/footer.css">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <a class="brand" href="index.html">Ghurir</a>
+
+    <nav aria-label="Main navigation">
+      <a href="labs/lab-1.html">IDOR</a>
+      <a href="labs/lab-2.html">Prototype Pollution</a>
+      <a href="labs/lab-3.html">Race Condition</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div class="hero-content">
+
+        <p class="eyebrow">
+          Interactive Web Security Labs
+        </p>
+
+        <h1>
+          Explore. <span>Exploit.</span> Secure.
+        </h1>
+
+        <p class="hero-description">
+          Discover how web vulnerabilities work,
+          test them in a controlled environment,
+          and learn how to prevent them.
+        </p>
+
+        <a href="#labs" class="btn">
+          Explore Labs
+        </a>
+
+      </div>
+    </section>
+
+    <section id="labs" class="labs-section">
+      <div class="container">
+
+        <h2 class="section-title">
+          Explore Security Labs
+        </h2>
+
+        <p class="section-description">
+          Select a lab to begin your security practice.
+        </p>
+
+        <div class="labs-grid">
+
+          <a href="labs/lab-1.html" class="lab-card">
+            <span class="lab-card__number">01</span>
+            <h3>IDOR</h3>
+            <p>
+              Explore broken access control and learn
+              how unauthorized users can access
+              resources belonging to others.
+            </p>
+            <span class="lab-card__action">
+              Open Lab &rarr;
+            </span>
+          </a>
+
+          <a href="labs/lab-2.html"
+             class="lab-card lab-card--featured">
+            <span class="lab-card__number">02</span>
+            <h3>Prototype Pollution</h3>
+            <p>
+              Discover how unsafe JavaScript object
+              operations can affect shared prototypes
+              and application behavior.
+            </p>
+            <span class="lab-card__action">
+              Open Lab &rarr;
+            </span>
+          </a>
+
+          <a href="labs/lab-3.html" class="lab-card">
+            <span class="lab-card__number">03</span>
+            <h3>Race Condition</h3>
+            <p>
+              Understand how simultaneous requests
+              can cause unexpected behavior when
+              operations are not synchronized.
+            </p>
+            <span class="lab-card__action">
+              Open Lab &rarr;
+            </span>
+          </a>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+
+      <div class="footer-brand">
+        <h2>Ghurir</h2>
+        <p>Learn web security through practical labs.</p>
+      </div>
+
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="labs/lab-1.html">IDOR</a>
+        <a href="labs/lab-2.html">Prototype Pollution</a>
+        <a href="labs/lab-3.html">Race Condition</a>
+      </nav>
+
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Ghurir. Web Security Labs.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
