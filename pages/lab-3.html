@@ -3,26 +3,122 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lab 3 | Ghurir</title>
-  <link rel="stylesheet" href="../css/styles.css">
+  <meta name="description" content="Understand how overlapping operations on shared data can produce incorrect results when synchronization is missing.">
+  <title>Race Condition Lab | Ghurair</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../stylesheet/global.css">
+  <link rel="stylesheet" href="../stylesheet/styles.css">
+  <link rel="stylesheet" href="../stylesheet/labs.css">
+  <link rel="stylesheet" href="../stylesheet/footer.css">
 </head>
 <body>
+  <!-- Shared navigation -->
   <header class="site-header">
-    <a class="brand" href="../index.html">Ghurir</a>
-    <nav aria-label="Primary navigation">
-      <a href="lab-1.html">Lab 1</a>
-      <a href="lab-2.html">Lab 2</a>
-      <a href="lab-3.html" aria-current="page">Lab 3</a>
+    <a class="brand" href="index.html" aria-label="Ghurair home">Ghurair</a>
+    <nav aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="lab-1.html">IDOR</a>
+      <a href="lab-2.html">Prototype Pollution</a>
+      <a href="lab-3.html" aria-current="page">Race Condition</a>
     </nav>
   </header>
+  <main>
+    <!-- Lab introduction -->
+    <section class="lab-header">
+      <div class="container">
+        <a class="back-link" href="index.html#labs">&larr; Back to Labs</a>
+        <p class="eyebrow">Security Lab 03</p>
+        <h1>Race Condition</h1>
+        <p class="lab-intro">Understand how overlapping operations on shared data can produce incorrect results when synchronization is missing.</p>
+        <div class="lab-tags">
+          <span>CWE-362</span>
+          <span>Concurrency Security</span>
+          <span>Lab 03</span>
+        </div>
+      </div>
+    </section>
 
-  <main class="page-container lab-page">
-    <p class="eyebrow">Security lab 03</p>
-    <h1>Lab 3: Vulnerability title</h1>
-    <p class="placeholder">This lab is ready for its vulnerability explanation, code sample, payloads, impact, fix, and sources.</p>
+    <div class="container lab-layout">
+      <!-- Section 01: Concept -->
+      <section class="lab-panel" id="vulnerability">
+        <h2>01. The Vulnerability</h2>
+        <p>A Race Condition happens when the result of operations depends on their timing or interleaving while accessing shared state.</p>
+        <p>Without appropriate synchronization, multiple requests can read or update the same resource in an unsafe order.</p>
+      </section>
+
+      <!-- Section 02: Ready for team source-code excerpt -->
+      <section class="lab-panel" id="vulnerable-code">
+        <h2>02. The Vulnerable Code</h2>
+        <p>The team's vulnerable code and its explanation will be added here.</p>
+        <div class="code-window">
+          <div class="code-header">
+            <span>Vulnerable Implementation</span>
+            <span class="code-status vulnerable-status">Vulnerable</span>
+          </div>
+          <!-- Replace the code text, not the surrounding code-window markup. -->
+          <pre><code>// TEAM TODO: Insert vulnerable implementation here.
+// Escape HTML characters when pasting code snippets.</code></pre>
+        </div>
+        <p class="code-explanation"><strong>Security Issue:</strong> The team will identify and explain the unsafe operation here.</p>
+      </section>
+
+      <!-- Section 03: Ready for team-provided interactive demo -->
+      <section class="lab-panel" id="simulation">
+        <h2>03. Try the Attack</h2>
+        <p>The interactive Race Condition demonstration will be added when the team's implementation is ready.</p>
+        <div class="lab-demo-container" id="lab-demo-container">
+          <!-- Replace this placeholder with the team's demo markup. -->
+          <div class="demo-placeholder">
+            <h3>Lab Environment</h3>
+            <p>This area is reserved for the Race Condition demonstration.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 04: Impact -->
+      <section class="lab-panel" id="impact">
+        <h2>04. Why It Matters</h2>
+        <p>Race Conditions may lead to inconsistent state, duplicate actions or incorrect changes to shared resources.</p>
+      </section>
+
+      <!-- Section 05: Ready for team fix -->
+      <section class="lab-panel" id="fix-section">
+        <h2>05. The Fix</h2>
+        <p>The team will add a secure implementation here, showing the chosen synchronization or atomic-operation strategy.</p>
+        <div class="code-window">
+          <div class="code-header">
+            <span>Secure Implementation</span>
+            <span class="code-status fixed-status">Fixed</span>
+          </div>
+          <pre><code>// TEAM TODO: Insert fixed implementation here.
+// Escape HTML characters when pasting code snippets.</code></pre>
+        </div>
+        <p class="code-explanation"><strong>Security Improvement:</strong> The team will explain why the fix works here.</p>
+      </section>
+    </div>
   </main>
-
-  <script src="../js/app.js"></script>
-  <script src="../js/lab-3.js"></script>
+  <!-- Shared footer -->
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <h2>Ghurair</h2>
+        <p>Learn web security through practical labs.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="lab-1.html">IDOR</a>
+        <a href="lab-2.html">Prototype Pollution</a>
+        <a href="lab-3.html">Race Condition</a>
+      </nav>
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Ghurair. Web Security Labs.</p>
+      <p>Final project developed as part of a scholarship program offered by 42 Amman.</p>
+    </div>
+  </footer>
 </body>
 </html>
