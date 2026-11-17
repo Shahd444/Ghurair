@@ -1,4 +1,4 @@
-# Ghurir
+# Ghurair
 
 Interactive web security sandbox for the Ghurir final project.
 

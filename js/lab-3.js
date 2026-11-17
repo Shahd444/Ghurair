@@ -1,69 +1,43 @@
-const demoPrototype = {};
 
-//both inherit from the same prototype
-//for app settings theme language etc
-const settings = Object.create(demoPrototype);
-const user = Object.create(demoPrototype);
+// Payloads are raw JSON strings.
+// JSON.parse creates an own "__proto__" property from these strings.
+const payloads = {
+    admin: '{"theme":"dark","__proto__":{"isAdmin":true}}',
+    role: '{"theme":"dark","__proto__":{"role":"admin"}}',
+    debug: '{"theme":"dark","__proto__":{"debug":true}}'
+};
+
+let selectedPayload = "admin";
+let selectedMode = "vulnerable";
 
 //vulnerable recursive merge
 function unsafeMerge(target, source) {
-
-    //loop through every own property in the source
     for (const key of Object.keys(source)) {
 
-        //if the value is a nested object
-        if (source[key] !== null &&
+        if (
+            source[key] !== null &&
             typeof source[key] === "object" &&
-            !Array.isArray(source[key])) {
-
-            //reuse an existing object or create a new one
+            !Array.isArray(source[key])
+        ) {
+            //vulnerable line: does not protect against "__proto__"
             target[key] = target[key] || {};
 
-            //merge the nested object recursively
             unsafeMerge(target[key], source[key]);
 
         } else {
-
-            //copy normal values
             target[key] = source[key];
         }
     }
 }
 
-//attacker-controlled JSON payload
-const payload = JSON.parse(
-    '{"theme":"dark","__proto__":{"isAdmin":true}}'
-);
-
-//execute the vulnerable merge
-unsafeMerge(settings, payload);
-
-console.log("=== VULNERABLE VERSION ===");
-console.log("Settings theme:", settings.theme);
-console.log("User isAdmin:", user.isAdmin);
-
-console.log(
-    "User owns isAdmin:",
-    Object.hasOwn(user, "isAdmin")
-);
-
-//Separate prototype for fixed
-const fixedDemoPrototype = {};
-
-//Separate objects
-const fixedSettings = Object.create(fixedDemoPrototype);
-const fixedUser = Object.create(fixedDemoPrototype);
-
-//dangerous property names
+//fixed recursive merge
 const blockedKeys = new Set([
     "__proto__",
     "constructor",
     "prototype"
 ]);
 
-//Safe recursive merge
 function safeMerge(target, source) {
-
     for (const key of Object.keys(source)) {
 
         //reject dangerous property names
@@ -73,11 +47,11 @@ function safeMerge(target, source) {
 
         const value = source[key];
 
-        //handle nested objects
-        if (value !== null &&
+        if (
+            value !== null &&
             typeof value === "object" &&
-            !Array.isArray(value)) {
-
+            !Array.isArray(value)
+        ) {
             //reuse only an existing own object
             if (
                 !Object.hasOwn(target, key) ||
@@ -88,27 +62,133 @@ function safeMerge(target, source) {
                 target[key] = Object.create(null);
             }
 
-            //continue recursively
             safeMerge(target[key], value);
 
         } else {
-
-            //copy allowed values
             target[key] = value;
         }
     }
 }
 
-//Use THE SAME payload
-safeMerge(fixedSettings, payload);
+//run the selected payload
+function runPrototypeLab(mode, payloadText) {
+    //fresh prototype and objects for every execution
+    const demoPrototype = {};
 
-//check the result
-console.log("=== FIXED VERSION ===");
+    const settings = Object.create(demoPrototype);
+    const user = Object.create(demoPrototype);
 
-console.log("Settings theme:", fixedSettings.theme);
-console.log("User isAdmin:", fixedUser.isAdmin);
+    //parse the attacker-controlled JSON
+    let payload;
 
-console.log(
-    "User owns isAdmin:",
-    Object.hasOwn(fixedUser, "isAdmin")
-);
+    try {
+        payload = JSON.parse(payloadText);
+    } catch {
+        return "Invalid JSON payload.";
+    }
+
+    //execute the selected version
+    if (mode === "vulnerable") {
+        unsafeMerge(settings, payload);
+    } else {
+        safeMerge(settings, payload);
+    }
+
+    //find the injected property inside the payload
+    const injectedProperties = payload["__proto__"];
+
+    const propertyName =
+        injectedProperties &&
+        typeof injectedProperties === "object"
+            ? Object.keys(injectedProperties)[0]
+            : null;
+
+    if (!propertyName) {
+        return "No test property found in the payload.";
+    }
+
+    //check whether the shared prototype was modified
+    const polluted = Object.hasOwn(
+        demoPrototype,
+        propertyName
+    );
+
+    //check whether the user inherits the property
+    const inherited =
+        !Object.hasOwn(user, propertyName) &&
+        propertyName in user;
+
+    const value = user[propertyName];
+
+    return {
+        mode,
+        theme: settings.theme,
+        property: propertyName,
+        value: value === undefined ? "undefined" : value,
+        polluted,
+        inherited,
+        userOwnsProperty: Object.hasOwn(user, propertyName)
+    };
+}
+
+//update the displayed result
+const payloadDisplay = document.getElementById("payload-display");
+const resultOutput = document.getElementById("result-output");
+
+function updatePayloadDisplay() {
+    payloadDisplay.textContent = payloads[selectedPayload];
+}
+
+function runSelectedPayload() {
+    const result = runPrototypeLab(
+        selectedMode,
+        payloads[selectedPayload]
+    );
+
+    resultOutput.textContent =
+        typeof result === "string"
+            ? result
+            : [
+                `Mode: ${result.mode}`,
+                `Settings theme: ${result.theme}`,
+                `Tested property: ${result.property}`,
+                `User value: ${result.value}`,
+                `Prototype polluted: ${result.polluted}`,
+                `User inherits property: ${result.inherited}`,
+                `User owns property: ${result.userOwnsProperty}`
+            ].join("\n");
+}
+
+//payload button events
+document.querySelectorAll("[data-payload]").forEach(button => {
+    button.addEventListener("click", () => {
+        selectedPayload = button.dataset.payload;
+        updatePayloadDisplay();
+        runSelectedPayload();
+    });
+});
+
+//version button events
+document.querySelectorAll("[data-mode]").forEach(button => {
+    button.addEventListener("click", () => {
+        selectedMode = button.dataset.mode;
+
+        document.querySelectorAll("[data-mode]").forEach(btn => {
+            btn.setAttribute(
+                "aria-pressed",
+                btn.dataset.mode === selectedMode ? "true" : "false"
+            );
+        });
+
+        runSelectedPayload();
+    });
+});
+
+//run button
+document
+    .getElementById("run-button")
+    .addEventListener("click", runSelectedPayload);
+
+//initial display
+updatePayloadDisplay();
+runSelectedPayload();
