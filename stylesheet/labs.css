@@ -386,3 +386,45 @@
         font-size: 0.8rem;
     }
 }
+
+/* Lab 3 - Prototype Pollution UI */
+
+.lab-demo-container {
+    margin-top: 24px;
+    padding: 30px;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.demo-result-data {
+    overflow-x: auto;
+    margin: 15px 0 0;
+    color: var(--color-text);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.demo-caption {
+    margin-top: 16px;
+    color: var(--color-muted);
+    font-size: 0.85rem;
+}
+
+.result-heading h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+@media (max-width: 700px) {
+
+    .lab-demo-container {
+        padding: 20px;
+    }
+
+    .mode-switch {
+        flex-wrap: wrap;
+    }
+}

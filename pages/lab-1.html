@@ -10,6 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 
+  <!-- Original teammate JavaScript -->
+<script src="../js/lab-3.js" defer></script>
+
+<!-- Frontend integration -->
+<script src="../js/lab-3-ui.js" defer></script>
   <link rel="stylesheet" href="../stylesheet/global.css">
   <link rel="stylesheet" href="../stylesheet/styles.css">
   <link rel="stylesheet" href="../stylesheet/labs.css">
@@ -19,12 +24,14 @@
   <!-- Shared navigation -->
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="Ghurair home">Ghurair</a>
-    <nav aria-label="Main navigation">
-      <a href="index.html">Home</a>
-      <a href="lab-1.html" aria-current="page">IDOR</a>
-      <a href="lab-2.html">Prototype Pollution</a>
-      <a href="lab-3.html">Race Condition</a>
-    </nav>
+    
+  <nav aria-label="Main navigation">
+    <a href="index.html">Home</a>
+    <a href="lab-1.html" aria-current="page">IDOR</a>
+    <a href="lab-2.html">Race Condition</a>
+    <a href="lab-3.html">Prototype Pollution</a>
+  </nav>
+
   </header>
   <main>
     <!-- Lab introduction -->
@@ -67,17 +74,110 @@
       </section>
 
       <!-- Section 03: Ready for team-provided interactive demo -->
-      <section class="lab-panel" id="simulation">
-        <h2>03. Try the Attack</h2>
-        <p>The interactive IDOR demonstration will be added when the team's implementation is ready.</p>
-        <div class="lab-demo-container" id="lab-demo-container">
-          <!-- Replace this placeholder with the team's demo markup. -->
-          <div class="demo-placeholder">
-            <h3>Lab Environment</h3>
-            <p>This area is reserved for the IDOR demonstration.</p>
-          </div>
-        </div>
-      </section>
+     
+<!-- Section 03: Prototype Pollution Demo -->
+<section class="lab-panel" id="simulation">
+
+  <h2>03. Try the Attack</h2>
+
+  <p>
+    Compare the vulnerable and fixed results
+    produced by your teammate's JavaScript.
+    Both versions run when this page loads.
+  </p>
+
+  <div class="lab-demo-container">
+
+    <div class="simulation-user">
+
+      <strong>Attacker-Controlled JSON Payload</strong>
+
+      <p>
+        The attacker tries to inject
+        <code>isAdmin: true</code>
+        through the <code>__proto__</code> property.
+      </p>
+
+    </div>
+
+    <!-- Payload Display -->
+    <div class="code-window">
+
+      <div class="code-header">
+        <span>payload.json</span>
+
+        <span class="code-status vulnerable-status">
+          Payload
+        </span>
+      </div>
+
+      <pre><code>{
+  "theme": "dark",
+  "__proto__": {
+    "isAdmin": true
+  }
+}</code></pre>
+
+    </div>
+
+    <!-- Mode Buttons -->
+    <div class="simulation-toolbar">
+
+      <div class="mode-switch"
+           role="group"
+           aria-label="Select result to display">
+
+        <button
+          type="button"
+          class="mode-btn active"
+          id="show-vulnerable"
+          aria-pressed="true">
+          Show Vulnerable Result
+        </button>
+
+        <button
+          type="button"
+          class="mode-btn"
+          id="show-fixed"
+          aria-pressed="false">
+          Show Fixed Result
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- Result Display -->
+    <div class="result-box"
+         role="status"
+         aria-live="polite">
+
+      <div class="result-heading">
+
+        <h3>Simulation Result</h3>
+
+        <span id="prototype-result-status"
+              class="result-status">
+          Ready
+        </span>
+
+      </div>
+
+      <pre
+        class="demo-result-data"
+        id="prototype-result-data">Loading demonstration results...</pre>
+
+    </div>
+
+    <p class="demo-caption">
+      These buttons display data produced on
+      page load. The original JavaScript also
+      logs its results in the browser console.
+    </p>
+
+  </div>
+
+</section>
 
       <!-- Section 04: Impact -->
       <section class="lab-panel" id="impact">

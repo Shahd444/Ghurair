@@ -1,124 +1,442 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Understand how overlapping operations on shared data can produce incorrect results when synchronization is missing.">
-  <title>Race Condition Lab | Ghurair</title>
+  <meta name="description" content="Interactive Prototype Pollution security lab | Ghurair">
+  <title>Prototype Pollution Lab | Ghurair</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../stylesheet/global.css">
   <link rel="stylesheet" href="../stylesheet/styles.css">
   <link rel="stylesheet" href="../stylesheet/labs.css">
   <link rel="stylesheet" href="../stylesheet/footer.css">
+
+  <!-- Original teammate JavaScript: unchanged -->
+  <script src="../js/lab-3.js" defer></script>
 </head>
+
 <body>
-  <!-- Shared navigation -->
   <header class="site-header">
-    <a class="brand" href="index.html" aria-label="Ghurair home">Ghurair</a>
+    <a class="brand" href="index.html">Ghurair</a>
+
     <nav aria-label="Main navigation">
       <a href="index.html">Home</a>
       <a href="lab-1.html">IDOR</a>
-      <a href="lab-2.html">Prototype Pollution</a>
-      <a href="lab-3.html" aria-current="page">Race Condition</a>
+      <a href="lab-2.html">Race Condition</a>
+      <a href="lab-3.html" aria-current="page">Prototype Pollution</a>
     </nav>
   </header>
+
   <main>
-    <!-- Lab introduction -->
     <section class="lab-header">
       <div class="container">
         <a class="back-link" href="index.html#labs">&larr; Back to Labs</a>
         <p class="eyebrow">Security Lab 03</p>
-        <h1>Race Condition</h1>
-        <p class="lab-intro">Understand how overlapping operations on shared data can produce incorrect results when synchronization is missing.</p>
+        <h1>Prototype Pollution</h1>
+
+        <p class="lab-intro">
+          Explore unsafe JavaScript object merging and compare
+          vulnerable and protected behavior.
+        </p>
+
         <div class="lab-tags">
-          <span>CWE-362</span>
-          <span>Concurrency Security</span>
-          <span>Lab 03</span>
+          <span>CWE-1321</span>
+          <span>JavaScript Security</span>
+          <span>Interactive Lab 03</span>
         </div>
       </div>
     </section>
 
     <div class="container lab-layout">
-      <!-- Section 01: Concept -->
+
+      <!-- 01. Vulnerability -->
       <section class="lab-panel" id="vulnerability">
         <h2>01. The Vulnerability</h2>
-        <p>A Race Condition happens when the result of operations depends on their timing or interleaving while accessing shared state.</p>
-        <p>Without appropriate synchronization, multiple requests can read or update the same resource in an unsafe order.</p>
+
+        <p>
+          Prototype Pollution occurs when untrusted keys such as
+          <code>__proto__</code> modify properties inherited by
+          other JavaScript objects.
+        </p>
+
+        <p>
+          Here, <code>settings</code> and <code>user</code>
+          share a prototype. An unsafe merge may affect
+          <code>user</code> without changing its own properties.
+        </p>
       </section>
 
-      <!-- Section 02: Ready for team source-code excerpt -->
+      <!-- 02. Vulnerable Code -->
       <section class="lab-panel" id="vulnerable-code">
         <h2>02. The Vulnerable Code</h2>
-        <p>The team's vulnerable code and its explanation will be added here.</p>
+
+        <p>
+          This key excerpt from the team's
+          <code>unsafeMerge()</code> follows inherited properties:
+        </p>
+
         <div class="code-window">
           <div class="code-header">
-            <span>Vulnerable Implementation</span>
+            <span>lab-3.js — unsafeMerge() excerpt</span>
             <span class="code-status vulnerable-status">Vulnerable</span>
           </div>
-          <!-- Replace the code text, not the surrounding code-window markup. -->
-          <pre><code>// TEAM TODO: Insert vulnerable implementation here.
-// Escape HTML characters when pasting code snippets.</code></pre>
+          <pre><code>target[key] = target[key] || {};
+unsafeMerge(target[key], source[key]);</code></pre>
         </div>
-        <p class="code-explanation"><strong>Security Issue:</strong> The team will identify and explain the unsafe operation here.</p>
+
+        <p class="code-explanation">
+          <strong>Security Issue:</strong>
+          Without filtering dangerous keys, recursion can
+          write to a shared prototype.
+        </p>
       </section>
 
-      <!-- Section 03: Ready for team-provided interactive demo -->
+      <!-- 03. Interactive Simulation -->
       <section class="lab-panel" id="simulation">
         <h2>03. Try the Attack</h2>
-        <p>The interactive Race Condition demonstration will be added when the team's implementation is ready.</p>
-        <div class="lab-demo-container" id="lab-demo-container">
-          <!-- Replace this placeholder with the team's demo markup. -->
-          <div class="demo-placeholder">
-            <h3>Lab Environment</h3>
-            <p>This area is reserved for the Race Condition demonstration.</p>
+
+        <p>
+          Select a payload and security mode, then click
+          <strong>Run Payload</strong>.
+          Use <strong>Test All</strong> to verify all six combinations.
+        </p>
+
+        <div class="lab-demo-container prototype-demo">
+
+          <div class="simulation-user">
+            <strong>Prototype Pollution Test Environment</strong>
+            <p>
+              Each run creates fresh objects sharing
+              one isolated prototype.
+            </p>
           </div>
+
+          <!-- Payload Selection -->
+          <p class="payload-label" id="payload-label">
+            Choose an attacker payload
+          </p>
+
+          <div class="payload-buttons prototype-payload-buttons"
+               role="group" aria-labelledby="payload-label">
+            <button type="button" data-payload="admin"
+                    class="selected" aria-pressed="true">
+              isAdmin: true
+            </button>
+            <button type="button" data-payload="role"
+                    aria-pressed="false">
+              role: admin
+            </button>
+            <button type="button" data-payload="debug"
+                    aria-pressed="false">
+              debug: true
+            </button>
+          </div>
+
+          <!-- Selected JSON -->
+          <div class="code-window">
+            <div class="code-header">
+              <span id="payload-type">Payload: isAdmin: true</span>
+              <span class="code-status vulnerable-status">
+                Untrusted Input
+              </span>
+            </div>
+            <pre><code id="payload-display"></code></pre>
+          </div>
+
+          <!-- Security Mode -->
+          <div class="simulation-toolbar">
+            <div>
+              <span class="field-label">Security Mode</span>
+              <span id="prototype-mode-status"
+                    class="mode-badge mode-vulnerable">
+                Vulnerable Mode
+              </span>
+            </div>
+
+            <div class="mode-switch" role="group"
+                 aria-label="Security mode">
+              <button type="button" class="mode-btn active"
+                      data-mode="vulnerable" aria-pressed="true">
+                Vulnerable
+              </button>
+              <button type="button" class="mode-btn"
+                      data-mode="fixed" aria-pressed="false">
+                Fixed
+              </button>
+            </div>
+          </div>
+
+          <!-- Test Buttons -->
+          <div class="simulation-toolbar">
+            <button type="button" id="run-button"
+                    class="run-btn" style="margin-top:0">
+              Run Payload
+            </button>
+            <button type="button" id="test-all" class="mode-btn">
+              Test All (6)
+            </button>
+          </div>
+
+          <!-- Results -->
+          <div class="result-box" aria-live="polite">
+            <div class="result-heading">
+              <h3>Simulation Result</h3>
+              <span id="prototype-result-status"
+                    class="mode-badge">Ready</span>
+            </div>
+
+            <pre id="result-output"
+                 class="demo-result-data">Click Run Payload to start.</pre>
+          </div>
+
+          <p class="demo-caption">
+            The original lab-3.js remains unchanged and runs
+            its built-in console example once on page load.
+          </p>
         </div>
       </section>
 
-      <!-- Section 04: Impact -->
+      <!-- 04. Impact -->
       <section class="lab-panel" id="impact">
         <h2>04. Why It Matters</h2>
-        <p>Race Conditions may lead to inconsistent state, duplicate actions or incorrect changes to shared resources.</p>
+        <p>
+          Polluted inherited values may change application logic
+          and potentially contribute to authorization bypasses
+          or other unintended behavior.
+        </p>
       </section>
 
-      <!-- Section 05: Ready for team fix -->
+      <!-- 05. The Fix -->
       <section class="lab-panel" id="fix-section">
         <h2>05. The Fix</h2>
-        <p>The team will add a secure implementation here, showing the chosen synchronization or atomic-operation strategy.</p>
+
+        <p>
+          The team's <code>safeMerge()</code> rejects dangerous
+          property names and safely creates nested objects.
+        </p>
+
         <div class="code-window">
           <div class="code-header">
-            <span>Secure Implementation</span>
+            <span>lab-3.js — safeMerge() excerpts</span>
             <span class="code-status fixed-status">Fixed</span>
           </div>
-          <pre><code>// TEAM TODO: Insert fixed implementation here.
-// Escape HTML characters when pasting code snippets.</code></pre>
+          <pre><code>if (blockedKeys.has(key)) {
+    continue;
+}
+// When a new nested object is needed:
+target[key] = Object.create(null);</code></pre>
         </div>
-        <p class="code-explanation"><strong>Security Improvement:</strong> The team will explain why the fix works here.</p>
+
+        <p class="code-explanation">
+          <strong>Security Improvement:</strong>
+          Filtering <code>__proto__</code>,
+          <code>constructor</code> and <code>prototype</code>
+          prevents these payloads from changing the shared prototype.
+        </p>
+
+        <a href="#simulation" class="fix-action" id="try-fixed">
+          Compare the Fixed Version
+        </a>
       </section>
+
     </div>
   </main>
-  <!-- Shared footer -->
+
+  <!-- Shared Footer -->
   <footer class="site-footer">
     <div class="container footer-content">
       <div class="footer-brand">
         <h2>Ghurair</h2>
         <p>Learn web security through practical labs.</p>
       </div>
+
       <nav class="footer-nav" aria-label="Footer navigation">
         <a href="index.html">Home</a>
         <a href="lab-1.html">IDOR</a>
-        <a href="lab-2.html">Prototype Pollution</a>
-        <a href="lab-3.html">Race Condition</a>
+        <a href="lab-2.html">Race Condition</a>
+        <a href="lab-3.html">Prototype Pollution</a>
       </nav>
     </div>
+
     <div class="container footer-bottom">
       <p>&copy; 2026 Ghurair. Web Security Labs.</p>
-      <p>Final project developed as part of a scholarship program offered by 42 Amman.</p>
+      <p>
+        Final project developed as part of a scholarship
+        program offered by 42 Amman.
+      </p>
     </div>
   </footer>
+
+  <!-- UI logic: calls the ORIGINAL lab-3.js functions -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const $ = id => document.getElementById(id);
+
+      const cases = {
+        admin: { label: "isAdmin: true", key: "isAdmin", value: true },
+        role:  { label: "role: admin", key: "role", value: "admin" },
+        debug: { label: "debug: true", key: "debug", value: true }
+      };
+
+      let selected = "admin", mode = "vulnerable";
+
+      if (typeof unsafeMerge !== "function" ||
+          typeof safeMerge !== "function") {
+        $("result-output").textContent =
+          "Error: ../js/lab-3.js could not be loaded.";
+        return;
+      }
+
+      // Preserve __proto__ as an own JSON property
+      const payload = c => JSON.parse(
+        `{"theme":"dark","__proto__":{${JSON.stringify(c.key)}:${JSON.stringify(c.value)}}}`
+      );
+
+      function status(label, kind = "") {
+        $("prototype-result-status").textContent = label;
+        $("prototype-result-status").className =
+          `mode-badge ${kind}`;
+      }
+
+      function showSelection() {
+        const c = cases[selected];
+
+        $("payload-type").textContent = `Payload: ${c.label}`;
+        $("payload-display").textContent =
+          JSON.stringify(payload(c), null, 2);
+
+        $("prototype-mode-status").textContent =
+          mode === "fixed" ? "Fixed Mode" : "Vulnerable Mode";
+
+        $("prototype-mode-status").className =
+          `mode-badge mode-${mode}`;
+
+        document.querySelectorAll("[data-payload], [data-mode]")
+          .forEach(b => {
+            const active =
+              b.dataset.payload === selected || b.dataset.mode === mode;
+
+            b.classList.toggle(
+              "selected", active && b.hasAttribute("data-payload")
+            );
+            b.classList.toggle(
+              "active", active && b.hasAttribute("data-mode")
+            );
+            b.setAttribute("aria-pressed", String(active));
+          });
+
+        status("Ready");
+        $("result-output").textContent =
+          `Payload: ${c.label}\nMode: ${mode}\n\nClick Run Payload to execute.`;
+      }
+
+      // Run teammate's existing functions with fresh objects
+      function execute(c, selectedMode) {
+        const shared = {};
+        const settings = Object.create(shared);
+        const user = Object.create(shared);
+
+        (selectedMode === "fixed" ? safeMerge : unsafeMerge)(
+          settings, payload(c)
+        );
+
+        return {
+          theme: settings.theme,
+          value: user[c.key],
+          own: Object.hasOwn(user, c.key),
+          polluted: Object.hasOwn(shared, c.key)
+        };
+      }
+
+      // Single payload test
+      $("run-button").addEventListener("click", () => {
+        const c = cases[selected];
+        const r = execute(c, mode);
+        const expected = mode === "vulnerable";
+
+        const pass = r.theme === "dark" &&
+          r.polluted === expected && !r.own &&
+          (expected ? r.value === c.value : r.value === undefined);
+
+        status(
+          pass ? (r.polluted ? "Polluted" : "Protected") : "Unexpected",
+          pass ? (r.polluted ? "mode-vulnerable" : "mode-fixed")
+               : "mode-vulnerable"
+        );
+
+        $("result-output").textContent = [
+          `Payload: ${c.label}`,
+          `Mode: ${mode}`,
+          `Settings theme: ${r.theme}`,
+          `User ${c.key}: ${JSON.stringify(r.value) ?? "undefined"}`,
+          `User owns ${c.key}: ${r.own}`,
+          `Shared prototype affected: ${r.polluted}`,
+          `Result: ${pass
+            ? (r.polluted ? "Pollution successful" : "Pollution prevented")
+            : "Unexpected result - inspect console"}`
+        ].join("\n");
+      });
+
+      // Automatic testing: 3 payloads x 2 modes
+      $("test-all").addEventListener("click", () => {
+        const lines = [];
+        let passed = 0;
+
+        for (const c of Object.values(cases)) {
+          for (const m of ["vulnerable", "fixed"]) {
+            const r = execute(c, m);
+            const shouldPollute = m === "vulnerable";
+
+            const ok = r.theme === "dark" && !r.own &&
+              r.polluted === shouldPollute &&
+              (shouldPollute
+                ? r.value === c.value
+                : r.value === undefined);
+
+            passed += Number(ok);
+            lines.push(
+              `${ok ? "PASS" : "FAIL"} | ${c.label} | ${m} | polluted: ${r.polluted}`
+            );
+          }
+        }
+
+        status(
+          `${passed}/6 Passed`,
+          passed === 6 ? "mode-fixed" : "mode-vulnerable"
+        );
+
+        $("result-output").textContent =
+          lines.join("\n") + `\n\nTotal: ${passed}/6 tests passed`;
+      });
+
+      // Payload selection
+      document.querySelectorAll("[data-payload]").forEach(b =>
+        b.addEventListener("click", () => {
+          selected = b.dataset.payload;
+          showSelection();
+        })
+      );
+
+      // Mode selection
+      document.querySelectorAll("[data-mode]").forEach(b =>
+        b.addEventListener("click", () => {
+          mode = b.dataset.mode;
+          showSelection();
+        })
+      );
+
+      $("try-fixed").addEventListener("click", () => {
+        mode = "fixed";
+        showSelection();
+      });
+
+      showSelection();
+    });
+  </script>
+
 </body>
 </html>
