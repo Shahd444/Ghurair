@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore Insecure Direct Object References (IDOR) through a safe interactive payroll access-control demonstration.">
+  <title>IDOR Lab | Ghurair</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../stylesheet/global.css">
+  <link rel="stylesheet" href="../stylesheet/styles.css">
+  <link rel="stylesheet" href="../stylesheet/labs.css">
+  <link rel="stylesheet" href="../stylesheet/footer.css">
+  <script src="../js/lab-engine.js" defer></script>
+  <script src="../js/lab-1.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Ghurair home">Ghurair</a>
+    <nav aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="lab-1.html" aria-current="page">IDOR</a>
+      <a href="lab-2.html">Race Condition</a>
+      <a href="lab-3.html">Prototype Pollution</a>
+    </nav>
+  </header>
+  <main>
+    <section class="lab-header">
+      <div class="container">
+        <a class="back-link" href="index.html#labs">&larr; Back to Labs</a>
+        <p class="eyebrow">Security Lab 01</p>
+        <h1>Insecure Direct Object Reference (IDOR)</h1>
+        <p class="lab-intro">Explore how a missing ownership check can expose someone else's payroll record, and learn how server-side authorization blocks it.</p>
+        <div class="lab-tags">
+          <span>CWE-639</span>
+          <span>Broken Access Control</span>
+          <span>Interactive Lab 01</span>
+        </div>
+      </div>
+    </section>
+    <div class="container lab-layout lab-wide-layout">
+      <section class="lab-panel" id="vulnerability">
+        <h2>01. The Vulnerability</h2>
+        <p>IDOR occurs when an application uses a user-supplied identifier to access a resource without checking whether the signed-in user is authorized to view it.</p>
+        <p>This demonstration uses payroll record <strong>1001</strong> as your own record. In Vulnerable mode, requesting another employee's identifier reveals their data. In Fixed mode, the same request is denied.</p>
+      </section>
+
+      <section class="lab-panel" id="simulation">
+        <h2>02. Interactive IDOR Lab</h2>
+        <p>Choose a security mode and an ID delivery method, enter a record ID, then click <strong>Send Request</strong>. Changing a selection never sends a request automatically.</p>
+        <div class="lab-demo-container idor-demo">
+          <div class="simulation-toolbar">
+            <span class="field-label">Security Mode</span>
+            <div class="mode-switch" role="group" aria-label="Security mode">
+              <button type="button" class="mode-btn active" id="vulnerableMode" aria-pressed="true">Vulnerable</button>
+              <button type="button" class="mode-btn" id="fixedMode" aria-pressed="false">Fixed</button>
+            </div>
+          </div>
+          <div class="pp-grid">
+            <div class="pp-column">
+              <h3 class="pp-subtitle" id="codeTitle">Vulnerable code</h3>
+              <div class="code-window">
+                <div class="code-header"><span>JavaScript implementation (illustrative)</span><span>JS</span></div>
+                <pre class="pp-code"><code id="codeSample" aria-label="Code sample"></code></pre>
+              </div>
+              <div id="codeExplanation" class="code-explanation pp-note" aria-live="polite">
+                <span class="pp-dot" aria-hidden="true"></span>
+                <span>The server looks up the requested record but does not verify ownership.</span>
+              </div>
+            </div>
+            <div class="pp-column">
+              <h3 class="pp-subtitle" id="vectorLabel">Choose a Request Type</h3>
+              <div class="pp-payloads" role="group" aria-labelledby="vectorLabel">
+                <button type="button" class="pp-payload selected" data-vector="query" aria-pressed="true">
+                  <span class="pp-num">01</span><span><strong>URL Query Parameter</strong><small>Send a numeric ID in the URL</small></span>
+                </button>
+                <button type="button" class="pp-payload" data-vector="body" aria-pressed="false">
+                  <span class="pp-num">02</span><span><strong>JSON Body</strong><small>Send an ID inside a request body</small></span>
+                </button>
+                <button type="button" class="pp-payload" data-vector="token" aria-pressed="false">
+                  <span class="pp-num">03</span><span><strong>Encoded Reference</strong><small>Send a Base64-encoded record ID</small></span>
+                </button>
+              </div>
+              <div class="code-window">
+                <div class="code-header"><span id="payloadTitle">URL Query Parameter</span><span>REQUEST</span></div>
+                <div class="request-editor">
+                  <label class="request-prefix" for="payloadInput" id="requestPrefix">GET /api/payroll/view?slip_id=</label>
+                  <input id="payloadInput" type="text" autocomplete="off" spellcheck="false" aria-label="Requested record ID or payload">
+                  <div class="quick-chips" id="quickChips" aria-label="Sample payroll records"></div>
+                </div>
+              </div>
+              <div class="pp-actions">
+                <button type="button" class="run-btn" id="sendRequest">&#9654; Send Request</button>
+                <button type="button" class="mode-btn" id="resetLab">Reset Experiment</button>
+              </div>
+            </div>
+          </div>
+          <div class="result-box" id="resultPanel" aria-live="polite">
+            <div class="result-heading">
+              <h3 id="resultTitle">Waiting for your request</h3>
+              <span class="pp-status neutral" id="resultStatus">NOT RUN</span>
+            </div>
+            <p id="resultMessage">Choose a record and click Send Request.</p>
+            <div class="pp-results">
+              <div class="pp-result"><span>HTTP Status</span><strong id="statusValue">—</strong></div>
+              <div class="pp-result"><span>Record Owner</span><strong id="ownerValue">—</strong></div>
+              <div class="pp-result"><span>Access Verdict</span><strong id="verdictValue">Not run</strong></div>
+            </div>
+            <div class="code-window result-code-window">
+              <div class="code-header"><span>Simulated server response</span><span>JSON</span></div>
+              <pre class="response-preview"><code id="responseOutput">No request has been executed.</code></pre>
+            </div>
+            <div class="pp-console"><strong>LAB OUTPUT</strong><span id="consoleOutput">No request has been executed.</span></div>
+          </div>
+          <p class="demo-caption">Educational browser-only simulation using fictional payroll records; no real employee records or network requests are involved.</p>
+        </div>
+      </section>
+      <section class="lab-panel" id="impact">
+        <h2>03. Why It Matters</h2>
+        <p>Missing authorization checks can expose another user's payroll information, profile, orders, or documents even when the attacker is authenticated.</p>
+      </section>
+      <section class="lab-panel" id="fix-section">
+        <h2>04. The Fix</h2>
+        <p>Every resource request must verify that the authenticated user has permission to access the requested record. Base64 encoding or hiding IDs does not replace authorization.</p>
+        <div class="code-window">
+          <div class="code-header"><span>Object-level authorization</span><span class="code-status fixed-status">Fixed</span></div>
+          <pre><code>const record = findPaySlip(id);
+if (!record) return res.sendStatus(404);
+if (record.owner_id !== req.session.user_id) {
+  return res.sendStatus(403);
+}
+return res.json(record);</code></pre>
+        </div>
+        <p class="code-explanation"><strong>Security improvement:</strong> Check the record's ownership on the server before sending the response.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div class="footer-brand"><h2>Ghurair</h2><p>Learn web security through practical labs.</p></div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="lab-1.html">IDOR</a>
+        <a href="lab-2.html">Race Condition</a>
+        <a href="lab-3.html">Prototype Pollution</a>
+      </nav>
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Ghurair. Web Security Labs.</p>
+      <p>Final project developed as part of a scholarship program offered by 42 Amman.</p>
+    </div>
+  </footer>
+</body>
+</html>
