@@ -129,7 +129,7 @@
 }
 
 .section-description {
-    margin: 0 0 45px;
+    margin: 0 0 24px;
 
     color: var(--color-muted);
     text-align: center;
@@ -261,4 +261,47 @@
         min-height: 220px;
         padding: 24px;
     }
+}
+
+/* "How it works" steps on the home page */
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 860px;
+  margin: 0 auto 40px;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.how-steps li {
+  display: grid;
+  gap: 4px;
+  padding: 16px 18px 16px 52px;
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  counter-increment: step;
+  color: var(--color-muted);
+  font-size: .9rem;
+}
+.how-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 50%;
+  font-size: .8rem;
+  font-weight: 800;
+}
+.how-steps strong { color: var(--color-primary); }
+@media (max-width: 700px) {
+  .how-steps { grid-template-columns: 1fr; }
 }

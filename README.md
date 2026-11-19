@@ -1,37 +1,77 @@
 # Ghurair
 
-Interactive web security sandbox for the Ghurir final project.
+Three interactive web-security labs you can run in the browser. In each lab you press an attack payload, watch the vulnerability happen, switch to the fixed code, and press the **same payload** again to see it blocked.
 
-## Project structure
+**Live site:** _add the deployed URL here_
 
-```text
-index.html
-labs/
-  lab-1.html
-  lab-2.html
-  lab-3.html
-css/
-  styles.css
-js/
-  app.js
-  lab-engine.js
-  lab-1.js
-  lab-2.js
-  lab-3.js
-assets/
-  icons/
-  images/
+Final project, 42 Amman. Built with plain HTML, CSS and JavaScript. No backend, no login, no database.
+
+## The labs
+
+| # | Lab | What you do | OWASP Top 10:2025 | CWE |
+|---|-----|-------------|-------------------|-----|
+| 1 | **IDOR** | Change an ID in a request and read another employee's payroll record | A01 Broken Access Control | CWE-639 |
+| 2 | **Race Condition** | Send two requests at once and use a single-use coupon twice | A06 Insecure Design | CWE-362 |
+| 3 | **Prototype Pollution** | Send one JSON object and make a normal user look like an admin | A08 Software or Data Integrity Failures | CWE-1321 |
+
+Each lab page has the same parts: what it is, the vulnerable code with the buggy line highlighted, payload buttons, the result, why it matters (with a real incident), the fixed code with the fixing line highlighted, and sources.
+
+## How to use a lab
+
+1. Leave the switch on **Vulnerable**, pick a payload, and press the run button. The result shows the attack working.
+2. Switch to **Fixed**.
+3. Press the same payload again. The result shows it blocked.
+
+## Run it locally
+
+You need Python (or any static file server). From the project folder:
+
+```bash
+python -m http.server 8000
 ```
 
-## Team workflow
+Then open <http://localhost:8000/>.
 
-- Each lab owner works primarily in their lab HTML file and matching JavaScript file.
-- Shared layout and visual styles belong in `css/styles.css`.
-- Shared site behavior belongs in `js/app.js`.
-- Shared lab behavior belongs in `js/lab-engine.js`.
-- Keep all demonstrations simulated and safe; do not run real malicious code.
-- Test every lab in both Vulnerable and Fixed modes before submission.
+## Project layout
 
-## Live URL
+```text
+index.html           home page with the three lab cards (must stay in the repo root for GitHub Pages)
+pages/
+  lab-1.html         IDOR
+  lab-2.html         Race Condition
+  lab-3.html         Prototype Pollution
+js/
+  lab-engine.js      shared helpers: draw code, highlight a line, switch buttons
+  lab-1.js           IDOR logic and page behavior
+  lab-2.js           Race Condition logic and page behavior
+  lab-3.js           Prototype Pollution logic and page behavior
+stylesheet/
+  global.css         colors, fonts, base styles
+  styles.css         header, hero, home page cards
+  labs.css           lab pages: code windows, payload cards, results
+  footer.css         footer
+```
 
-Add the deployed URL here before submission.
+Each lab page loads `lab-engine.js` first, then its own `lab-N.js`. The script finds elements on the page by `id` and handles everything: the Vulnerable/Fixed switch, the payloads, the result, and the Reset button.
+
+## How each lab works
+
+- **IDOR:** a fake payroll API in the browser. You are employee 1001; the payload asks for record 1002. Vulnerable mode returns it. Fixed mode checks the record's owner and answers 403.
+- **Race Condition:** the vulnerable and fixed coupon functions really run, with a short delay standing in for a database call. Two overlapping requests both succeed in the vulnerable version; the fixed version reserves the coupon before waiting, so one is rejected.
+- **Prototype Pollution:** the vulnerable and fixed merge functions really run on the payload, using a throwaway sandbox prototype. The page's own `Object.prototype` is never touched, and the lab prints a check that proves it.
+
+## Safety
+
+- Every demo is a simulation in your browser. No request is sent to any server.
+- All employees and records are made up. There are no real passwords, personal data or logos.
+- External links on the lab pages (OWASP, CWE, articles) only open when you click them. The Google Fonts stylesheet is the only thing loaded automatically from outside.
+
+## Before you submit
+
+Everyone on the team should do this on the **live** URL:
+
+- [ ] Home page: all three cards open the right lab
+- [ ] Each lab: payload works in Vulnerable mode, is blocked in Fixed mode, and Reset works
+- [ ] Each lab: all source links open
+- [ ] Phone-width screen: no sideways scrolling
+- [ ] The live URL above is filled in

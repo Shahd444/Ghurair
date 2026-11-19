@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ghurair: educational web security labs covering IDOR, Prototype Pollution and Race Conditions.">
+  <title>Web Security Labs | Ghurair</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="stylesheet/global.css">
+  <link rel="stylesheet" href="stylesheet/styles.css">
+  <link rel="stylesheet" href="stylesheet/labs.css">
+  <link rel="stylesheet" href="stylesheet/footer.css">
+</head>
+<body>
+  <!-- Shared navigation -->
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Ghurair home">Ghurair</a>
+
+<nav aria-label="Main navigation">
+  <a href="index.html" aria-current="page">Home</a>
+  <a href="pages/lab-1.html">IDOR</a>
+  <a href="pages/lab-2.html">Race Condition</a>
+  <a href="pages/lab-3.html">Prototype Pollution</a>
+</nav>
+
+  </header>
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-content">
+        <p class="eyebrow">INTERACTIVE WEB SECURITY LABS</p>
+        <h1>Learn to Break. <span>Build to Protect.</span></h1>
+        <p class="hero-description">
+          Three short hands-on labs. Run an attack in a safe sandbox, switch on the fix,
+          then run the same attack again and watch it fail.
+        </p>
+        <a class="btn" href="#labs">Explore Labs</a>
+      </div>
+    </section>
+
+    <!-- Three available labs -->
+    <section id="labs" class="labs-section">
+      <div class="container">
+        <h2 class="section-title">Explore Security Labs</h2>
+        <p class="section-description">Pick a lab. Each one works the same way:</p>
+        <ol class="how-steps">
+          <li><strong>Attack</strong><span>Press the payload on the Vulnerable version.</span></li>
+          <li><strong>Fix</strong><span>Switch to the Fixed version.</span></li>
+          <li><strong>Block</strong><span>Press the same payload. It no longer works.</span></li>
+        </ol>
+
+<div class="labs-grid">
+
+  <!-- Lab 01: IDOR -->
+  <a class="lab-card" href="pages/lab-1.html">
+    <span class="lab-card__number">01</span>
+
+    <h3>IDOR</h3>
+
+    <p>
+      Change one number in a request and read
+      another employee's payroll record.
+    </p>
+
+    <span class="lab-card__action">
+      Open lab &rarr;
+    </span>
+  </a>
+
+  <!-- Lab 02: Race Condition -->
+  <a class="lab-card" href="pages/lab-2.html">
+    <span class="lab-card__number">02</span>
+
+    <h3>Race Condition</h3>
+
+    <p>
+      Send two requests at the same moment and
+      use a single-use coupon twice.
+    </p>
+
+    <span class="lab-card__action">
+      Open lab &rarr;
+    </span>
+  </a>
+
+  <!-- Lab 03: Prototype Pollution -->
+  <a class="lab-card" href="pages/lab-3.html">
+    <span class="lab-card__number">03</span>
+
+    <h3>Prototype Pollution</h3>
+
+    <p>
+      Send one crafted JSON object and make
+      every user look like an admin.
+    </p>
+
+    <span class="lab-card__action">
+      Open lab &rarr;
+    </span>
+  </a>
+
+</div>
+
+      </div>
+    </section>
+  </main>
+  <!-- Shared footer -->
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <h2>Ghurair</h2>
+        <p>Learn web security through practical labs.</p>
+      </div>
+
+<nav class="footer-nav" aria-label="Footer navigation">
+  <a href="index.html">Home</a>
+  <a href="pages/lab-1.html">IDOR</a>
+  <a href="pages/lab-2.html">Race Condition</a>
+  <a href="pages/lab-3.html">Prototype Pollution</a>
+</nav>
+
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Ghurair. Web Security Labs.</p>
+      <p>Final project developed as part of a scholarship program offered by 42 Amman.</p>
+    </div>
+  </footer>
+</body>
+</html>
