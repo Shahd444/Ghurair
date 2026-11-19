@@ -11,12 +11,17 @@
   color: var(--color-surface);
 }
 .back-link {
-  display: inline-block;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
   margin-bottom: 30px;
   color: var(--color-on-dark);
-  font-size: .9rem;
+  border: 1px solid rgba(213, 224, 238, .35);
+  border-radius: 50%;
+  transition: color var(--transition-base), border-color var(--transition-base);
 }
-.back-link:hover { color: var(--color-secondary); }
+.back-link:hover, .back-link:focus-visible { color: var(--color-secondary); border-color: var(--color-secondary); }
 .lab-header h1 {
   margin-bottom: 18px;
   color: var(--color-surface);
