@@ -2,9 +2,9 @@
 
 Three interactive web-security labs you can run in the browser. In each lab you press an attack payload, watch the vulnerability happen, switch to the fixed code, and press the **same payload** again to see it blocked.
 
-**Live site:** _add the deployed URL here_
+**Live site:** https://shahd444.github.io/Ghurair/
 
-Final project, 42 Amman. Built with plain HTML, CSS and JavaScript. No backend, no login, no database.
+Built with plain HTML, CSS and JavaScript. No backend, no login, no database.
 
 ## The labs
 
@@ -21,16 +21,6 @@ Each lab page has the same parts: what it is, the vulnerable code with the buggy
 1. Leave the switch on **Vulnerable**, pick a payload, and press the run button. The result shows the attack working.
 2. Switch to **Fixed**.
 3. Press the same payload again. The result shows it blocked.
-
-## Run it locally
-
-You need Python (or any static file server). From the project folder:
-
-```bash
-python -m http.server 8000
-```
-
-Then open <http://localhost:8000/>.
 
 ## Project layout
 
@@ -65,13 +55,3 @@ Each lab page loads `lab-engine.js` first, then its own `lab-N.js`. The script f
 - Every demo is a simulation in your browser. No request is sent to any server.
 - All employees and records are made up. There are no real passwords, personal data or logos.
 - External links on the lab pages (OWASP, CWE, articles) only open when you click them. The Google Fonts stylesheet is the only thing loaded automatically from outside.
-
-## Before you submit
-
-Everyone on the team should do this on the **live** URL:
-
-- [ ] Home page: all three cards open the right lab
-- [ ] Each lab: payload works in Vulnerable mode, is blocked in Fixed mode, and Reset works
-- [ ] Each lab: all source links open
-- [ ] Phone-width screen: no sideways scrolling
-- [ ] The live URL above is filled in
