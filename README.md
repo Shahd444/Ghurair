@@ -1,57 +1,77 @@
-# Ghurair — Interactive Web Security Labs
+# Ghurair
 
-An educational static website with three browser-only lab simulations: **IDOR**, **Race Condition**, and **Prototype Pollution**. The output is fully self-contained except for the optional Google Fonts request. **No npm packages or backend are needed to run the website.**
+Three interactive web-security labs you can run in the browser. In each lab you press an attack payload, watch the vulnerability happen, switch to the fixed code, and press the **same payload** again to see it blocked.
 
-## Start
+**Live site:** _add the deployed URL here_
 
-From the repository root:
+Final project, 42 Amman. Built with plain HTML, CSS and JavaScript. No backend, no login, no database.
+
+## The labs
+
+| # | Lab | What you do | OWASP Top 10:2025 | CWE |
+|---|-----|-------------|-------------------|-----|
+| 1 | **IDOR** | Change an ID in a request and read another employee's payroll record | A01 Broken Access Control | CWE-639 |
+| 2 | **Race Condition** | Send two requests at once and use a single-use coupon twice | A06 Insecure Design | CWE-362 |
+| 3 | **Prototype Pollution** | Send one JSON object and make a normal user look like an admin | A08 Software or Data Integrity Failures | CWE-1321 |
+
+Each lab page has the same parts: what it is, the vulnerable code with the buggy line highlighted, payload buttons, the result, why it matters (with a real incident), the fixed code with the fixing line highlighted, and sources.
+
+## How to use a lab
+
+1. Leave the switch on **Vulnerable**, pick a payload, and press the run button. The result shows the attack working.
+2. Switch to **Fixed**.
+3. Press the same payload again. The result shows it blocked.
+
+## Run it locally
+
+You need Python (or any static file server). From the project folder:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then visit **http://localhost:8000/pages/index.html**. The page paths and local asset links are intentionally compatible with this folder layout.
+Then open <http://localhost:8000/>.
 
-## Test and coverage (requires Node.js 22+)
+## Project layout
 
-```bash
-npm test
-npm run lint
-npm run coverage
-npm run verify
+```text
+index.html           home page with the three lab cards (must stay in the repo root for GitHub Pages)
+pages/
+  lab-1.html         IDOR
+  lab-2.html         Race Condition
+  lab-3.html         Prototype Pollution
+js/
+  lab-engine.js      shared helpers: draw code, highlight a line, switch buttons
+  lab-1.js           IDOR logic and page behavior
+  lab-2.js           Race Condition logic and page behavior
+  lab-3.js           Prototype Pollution logic and page behavior
+stylesheet/
+  global.css         colors, fonts, base styles
+  styles.css         header, hero, home page cards
+  labs.css           lab pages: code windows, payload cards, results
+  footer.css         footer
 ```
 
-`npm run coverage` enforces **>=90% statement/line and branch coverage on every modified JavaScript file** using Node's built-in V8 coverage report. No dependencies or installation step is necessary.
+Each lab page loads `lab-engine.js` first, then its own `lab-N.js`. The script finds elements on the page by `id` and handles everything: the Vulnerable/Fixed switch, the payloads, the result, and the Reset button.
 
-## File map (all 15 uploaded files reviewed)
+## How each lab works
 
-| Uploaded file | Project file | Purpose / status |
-| --- | --- | --- |
-| `index(6).html` | `pages/index.html` | Main lab directory; unchanged |
-| `lab-1(7).html` | `pages/lab-1.html` | **Repaired**: incorrect duplicate Race Condition page replaced with the IDOR lab UI |
-| `lab-2(9).html` | `pages/lab-2.html` | Race Condition UI; shared engine linked ahead of both existing JS scripts |
-| `lab-3(10).html` | `pages/lab-3.html` | Prototype Pollution UI; shared engine linked ahead of safe adapter |
-| `footer(8).css` | `stylesheet/footer.css` | Footer styles; unchanged |
-| `global(6).css` | `stylesheet/global.css` | Base styles and design tokens; unchanged |
-| `labs(10).css` | `stylesheet/labs.css` | Shared lab styles; unchanged |
-| `styles(7).css` | `stylesheet/styles.css` | Header, hero and landing cards; unchanged |
-| `app(2).js` | *deleted* | Unreferenced comment-only placeholder; verified no HTML or JS imports use it |
-| `lab-1(3).js` | `js/lab-1.js` | IDOR simulation; repeated presentation functions extracted |
-| `lab-2(7).js` | `js/lab-2.js` | **Unchanged, byte for byte**: original teammate coupon implementation |
-| `lab2-demo(1).js` | `js/lab2-demo.js` | Race UI adapter; repeated presentation functions extracted |
-| `lab-3(7).js` | `js/lab-3.js` | **Unchanged, byte for byte**: original prototype demonstration, intentionally not loaded into the website |
-| `lab3-demo(6).js` | `js/lab3-demo.js` | Safe prototype simulation; repeated presentation functions extracted |
-| `lab-engine(2).js` | `js/lab-engine.js` | Placeholder converted into shared UI utility module |
+- **IDOR:** a fake payroll API in the browser. You are employee 1001; the payload asks for record 1002. Vulnerable mode returns it. Fixed mode checks the record's owner and answers 403.
+- **Race Condition:** the vulnerable and fixed coupon functions really run, with a short delay standing in for a database call. Two overlapping requests both succeed in the vulnerable version; the fixed version reserves the coupon before waiting, so one is rejected.
+- **Prototype Pollution:** the vulnerable and fixed merge functions really run on the payload, using a throwaway sandbox prototype. The page's own `Object.prototype` is never touched, and the lab prints a check that proves it.
 
-## Behavior protection
+## Safety
 
-- **IDOR**: request type (query/body/Base64), manual execution, authorized vs exposed vs blocked, 400/403/404 handling, quick-record choices and reset remain available.
-- **Race Condition**: original coupon logic is untouched. The visual adapter calls its original hidden buttons only after **Run Test**; vulnerable/concurrent accepts two, fixed/concurrent accepts one, sequential rejects the second. Switching mode or selecting a test never runs it automatically.
-- **Prototype Pollution**: selected payloads are simulated using a null-prototype dictionary. `Object.prototype` is not modified by the on-page script. The separate original demonstrator is retained as a source artifact but is **not** loaded by `pages/lab-3.html` because it demonstrates intentionally unsafe mutation.
-- **Page layout**: stylesheets and navigation labels were kept intact. The repeated static Header/Footer markup is intentionally retained; extracting it would introduce client-side rendering or a build dependency and would not be behavior-neutral for a static site.
+- Every demo is a simulation in your browser. No request is sent to any server.
+- All employees and records are made up. There are no real passwords, personal data or logos.
+- External links on the lab pages (OWASP, CWE, articles) only open when you click them. The Google Fonts stylesheet is the only thing loaded automatically from outside.
 
-## QA limitations
+## Before you submit
 
-The tests run Node with a lightweight DOM/MutationObserver test double; they are **not a full real-browser or screenshot regression suite**. CSS was separately parsed for syntax errors and markup checked for IDs, paths, and loading order. Run a manual smoke test in Chrome or Firefox before deployment, especially on mobile widths. No production server/database/transaction is involved in any lab.
+Everyone on the team should do this on the **live** URL:
 
-For the complete QA trace and coverage figures, see [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md).
+- [ ] Home page: all three cards open the right lab
+- [ ] Each lab: payload works in Vulnerable mode, is blocked in Fixed mode, and Reset works
+- [ ] Each lab: all source links open
+- [ ] Phone-width screen: no sideways scrolling
+- [ ] The live URL above is filled in

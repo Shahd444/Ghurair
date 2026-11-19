@@ -13,16 +13,13 @@
   <link rel="stylesheet" href="../stylesheet/labs.css">
   <link rel="stylesheet" href="../stylesheet/footer.css">
   <script src="../js/lab-engine.js" defer></script>
-  <!-- Teammate's original logic (unmodified) -->
   <script src="../js/lab-2.js" defer></script>
-  <!-- Ghurair visual adapter (separate file) -->
-  <script src="../js/lab2-demo.js" defer></script>
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="index.html" aria-label="Ghurair home">Ghurair</a>
+    <a class="brand" href="../index.html" aria-label="Ghurair home">Ghurair</a>
     <nav aria-label="Main navigation">
-      <a href="index.html">Home</a>
+      <a href="../index.html">Home</a>
       <a href="lab-1.html">IDOR</a>
       <a href="lab-2.html" aria-current="page">Race Condition</a>
       <a href="lab-3.html">Prototype Pollution</a>
@@ -33,17 +30,13 @@
     <!-- Same hero structure as IDOR and Prototype Pollution. -->
     <section class="lab-header">
       <div class="container">
-        <a class="back-link" href="index.html#labs">&larr; Back to Labs</a>
+        <a class="back-link" href="../index.html#labs">&larr; Back to Labs</a>
         <p class="eyebrow">Security Lab 02</p>
         <h1>Race Condition</h1>
-        <p class="lab-intro">
-          Learn how overlapping operations can redeem a single-use coupon more
-          than once, then compare vulnerable and fixed behavior.
-        </p>
+        <p class="lab-intro">Use a single-use coupon twice by sending two requests at the same moment.</p>
         <div class="lab-tags">
+          <span>OWASP A06:2025 · Insecure Design</span>
           <span>CWE-362</span>
-          <span>Concurrency Security</span>
-          <span>Interactive Lab 02</span>
         </div>
       </div>
     </section>
@@ -51,31 +44,28 @@
     <div class="container lab-layout lab-wide-layout">
       <!-- 01: Same placement as the other two labs. -->
       <section class="lab-panel" id="vulnerability">
-        <h2>01. The Vulnerability</h2>
+        <h2>01. What It Is</h2>
         <p>
-          A Race Condition occurs when the result depends on the order in which
-          concurrent operations execute. This lab uses coupon <strong>SAVE50</strong>,
-          which has a usage limit of <strong>1</strong>.
-        </p>
-        <p>
-          In Vulnerable mode, both requests can read the coupon as available before
-          either marks it as used. In Fixed mode, the coupon is reserved before waiting.
+          A race condition happens when two requests run at the same time and the
+          result depends on which one finishes first. If a server checks a coupon
+          but only marks it used later, both requests can pass the check. It is a
+          check-then-use flaw: OWASP <strong>A06:2025 Insecure Design</strong> and
+          <strong>CWE-362</strong>.
         </p>
       </section>
 
       <!-- 02: Same integrated experiment pattern as Prototype Pollution. -->
       <section class="lab-panel" id="simulation">
-        <h2>02. Interactive Race Condition Lab</h2>
+        <h2>02. The Line and Try It</h2>
         <p>
-          Choose a security mode and request scenario, then press
-          <strong>Run Test</strong>. Changing your selection never runs a test automatically.
+          Coupon <strong>SAVE50</strong> can be used <strong>once</strong>. Press
+          <strong>Run Test</strong> with the attack selected, then switch to
+          <strong>Fixed</strong> and run it again.
         </p>
 
         <div class="lab-demo-container race-demo">
           <div class="simulation-toolbar">
-            <span class="field-label">Security Mode
-              <span id="raceModeStatus" class="pp-status bad" aria-live="polite">Vulnerable</span>
-            </span>
+            <span class="field-label">Security Mode</span>
             <div class="mode-switch" role="group" aria-label="Security mode">
               <button type="button" id="vulnerableMode" class="mode-btn active" aria-pressed="true">Vulnerable</button>
               <button type="button" id="fixedMode" class="mode-btn" aria-pressed="false">Fixed</button>
@@ -87,7 +77,7 @@
               <h3 class="pp-subtitle" id="codeTitle">Vulnerable code</h3>
               <div class="code-window">
                 <div class="code-header">
-                  <span>JavaScript Implementation (illustrative)</span>
+                  <span>Server code (simplified)</span>
                   <span id="codeModeBadge" class="code-status vulnerable-status">Vulnerable</span>
                 </div>
                 <pre class="pp-code"><code id="codeSample" aria-label="Code sample"></code></pre>
@@ -99,23 +89,22 @@
             </div>
 
             <div class="pp-column">
-              <h3 class="pp-subtitle" id="testLabel">Choose a Request Test</h3>
+              <h3 class="pp-subtitle" id="testLabel">Try it: choose a payload</h3>
               <div class="pp-payloads" role="group" aria-labelledby="testLabel">
-                <button type="button" class="pp-payload" data-test="normal" aria-pressed="false">
+                <button type="button" class="pp-payload selected" data-test="concurrent" aria-pressed="true">
                   <span class="pp-num">01</span>
-                  <span><strong>Normal Request</strong><small>One request redeems the coupon</small></span>
+                  <span><strong>Two requests at once</strong><small>The attack: both redeem SAVE50 together</small></span>
                 </button>
                 <button type="button" class="pp-payload" data-test="sequential" aria-pressed="false">
                   <span class="pp-num">02</span>
-                  <span><strong>Sequential Requests</strong><small>Request B starts after A finishes</small></span>
+                  <span><strong>One after the other</strong><small>Not an attack: B starts after A finishes</small></span>
                 </button>
-                <button type="button" class="pp-payload selected" data-test="concurrent" aria-pressed="true">
+                <button type="button" class="pp-payload" data-test="normal" aria-pressed="false">
                   <span class="pp-num">03</span>
-                  <span><strong>Concurrent Requests</strong><small>Both requests start together</small></span>
+                  <span><strong>One request</strong><small>Normal use: redeem the coupon once</small></span>
                 </button>
               </div>
-              <p class="demo-caption"><strong>Coupon:</strong> SAVE50 &nbsp; | &nbsp; <strong>Usage limit:</strong> 1</p>
-              <div class="pp-actions rc-actions">
+                            <div class="pp-actions rc-actions">
                 <button type="button" class="run-btn" id="runTest">&#9654; Run Test</button>
                 <button type="button" class="mode-btn" id="resetLab2">Reset Experiment</button>
               </div>
@@ -125,82 +114,65 @@
           <!-- Shared full-width result panel, like Prototype Pollution. -->
           <div class="result-box rc-result-box" id="resultPanel" aria-live="polite">
             <div class="result-heading">
-              <h3 id="resultTitle">Waiting for your test</h3>
+              <h3 id="resultTitle">No test run yet</h3>
               <span class="pp-status neutral" id="resultStatus">NOT RUN</span>
             </div>
-            <p class="rc-result-message" id="resultMessage">Select a request type and press Run Test.</p>
+            <p class="rc-result-message" id="resultMessage">Press Run Test to see what happens.</p>
             <pre id="results" class="rc-result-text">No requests yet</pre>
             <details class="rc-timeline-details" id="timelineDetails">
-              <summary>Execution Timeline <span id="eventCount">0 events</span></summary>
+              <summary>Step-by-step timeline <span id="eventCount">0 events</span></summary>
               <pre id="timeline" aria-live="polite">No events yet</pre>
             </details>
           </div>
-          <p class="demo-caption">
-            Educational browser simulation. It does not send real HTTP requests,
-            and the fixed mode does not replace atomic server-side operations.
-          </p>
+          <p class="demo-caption">Runs in your browser. No real requests are sent.</p>
         </div>
       </section>
 
       <section class="lab-panel" id="impact">
         <h2>03. Why It Matters</h2>
         <p>
-          Race Conditions can cause duplicate coupon redemptions, inconsistent balances,
-          oversold inventory, and other unauthorized operations when concurrent
-          requests access the same shared resource.
+          Race conditions can cause duplicate coupon redemptions, double withdrawals,
+          oversold stock and other money-related bugs, because every request thinks
+          it is the only one.
+        </p>
+        <p class="code-explanation">
+          <strong>Real incident:</strong> In 2015, researcher Egor Homakov showed that
+          sending two Starbucks gift-card transfers at the same moment made the
+          balance get credited twice, adding money to a card from nothing.
         </p>
       </section>
 
       <section class="lab-panel" id="fix-section">
         <h2>04. The Fix</h2>
         <p>
-          In Fixed mode, the code <strong>reserves the coupon before the first
-          asynchronous wait</strong>. A second request then sees the coupon as used
-          and is rejected. This example isolates the fixed behavior from the
-          teammate's original <code>applyCoupon()</code> function.
+          Reserve the coupon <strong>before</strong> the first wait. A second request
+          then sees it as used and is rejected.
         </p>
         <div class="code-window">
           <div class="code-header">
-            <span>Fixed Implementation (browser simulation)</span>
+            <span>Fixed implementation</span>
             <span class="code-status fixed-status">Fixed</span>
           </div>
-          <pre><code>async function applyCoupon(requestId) {
-  logEvent(`${requestId} → Checking coupon`);
-
-  if (couponUsed) {
-    logEvent(`${requestId} → Rejected`);
-    return `${requestId}: Rejected`;
-  }
-
-  logEvent(`${requestId} → Coupon available`);
-
-  // FIX: Reserve before any asynchronous waiting.
-  couponUsed = true;
-  logEvent(`${requestId} → Coupon reserved`);
-
-  logEvent(`${requestId} → Waiting...`);
-  await delay(100);
-
-  logEvent(`${requestId} → Accepted`);
-  return `${requestId}: Accepted`;
-}</code></pre>
+          <pre class="fix-code"><code id="fixCode" aria-label="Fixed code"></code></pre>
         </div>
         <p class="code-explanation">
-          <strong>Security Improvement:</strong> Reserving the coupon before
-          yielding execution prevents duplicate redemption in this browser simulation.
-          Real applications must enforce the usage limit on the server with an atomic
-          update, appropriate locking, or a transaction.
+          <strong>Security improvement:</strong> The highlighted line closes the gap
+          between checking and using the coupon, so the same concurrent payload now
+          redeems it only once. Real servers must do this atomically, for example with
+          a single database <code>UPDATE ... WHERE used = false</code>, a lock or a transaction.
         </p>
       </section>
-    </div>
 
-    <!-- Required by teammate's ORIGINAL JS; keep IDs unchanged. -->
-    <div id="original-race-controls" hidden aria-hidden="true">
-      <button type="button" id="modeBtn">Switch to Fixed Mode</button>
-      <span id="modeStatus">Vulnerable</span>
-      <button type="button" id="normalBtn">Send Normal Request</button>
-      <button type="button" id="sequentialBtn">Send Sequential Requests</button>
-      <button type="button" id="attackBtn">Send Concurrent Requests</button>
+      <section class="lab-panel" id="sources">
+        <h2>05. Sources</h2>
+        <ul class="source-list">
+          <li><a href="https://top10.owasp.org/2025/A06_2025-Insecure_Design/" target="_blank" rel="noopener">OWASP Top 10:2025, A06 Insecure Design</a></li>
+          <li><a href="https://cwe.mitre.org/data/definitions/362.html" target="_blank" rel="noopener">CWE-362: Concurrent Execution using Shared Resource with Improper Synchronization</a></li>
+          <li><a href="https://portswigger.net/web-security/race-conditions" target="_blank" rel="noopener">PortSwigger Web Security Academy: Race conditions</a></li>
+          <li><a href="https://sakurity.com/blog/2015/05/21/starbucks.html" target="_blank" rel="noopener">Egor Homakov: Starbucks gift card race condition write-up (2015)</a></li>
+          <li><a href="https://www.schneier.com/blog/archives/2015/05/race_condition_.html" target="_blank" rel="noopener">Schneier on Security: Race Condition Exploit in Starbucks Gift Cards</a></li>
+        </ul>
+      </section>
     </div>
   </main>
 
@@ -211,7 +183,7 @@
         <p>Learn web security through practical labs.</p>
       </div>
       <nav class="footer-nav" aria-label="Footer navigation">
-        <a href="index.html">Home</a>
+        <a href="../index.html">Home</a>
         <a href="lab-1.html">IDOR</a>
         <a href="lab-2.html">Race Condition</a>
         <a href="lab-3.html">Prototype Pollution</a>

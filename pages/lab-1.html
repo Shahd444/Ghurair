@@ -17,9 +17,9 @@
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="index.html" aria-label="Ghurair home">Ghurair</a>
+    <a class="brand" href="../index.html" aria-label="Ghurair home">Ghurair</a>
     <nav aria-label="Main navigation">
-      <a href="index.html">Home</a>
+      <a href="../index.html">Home</a>
       <a href="lab-1.html" aria-current="page">IDOR</a>
       <a href="lab-2.html">Race Condition</a>
       <a href="lab-3.html">Prototype Pollution</a>
@@ -28,27 +28,25 @@
   <main>
     <section class="lab-header">
       <div class="container">
-        <a class="back-link" href="index.html#labs">&larr; Back to Labs</a>
+        <a class="back-link" href="../index.html#labs">&larr; Back to Labs</a>
         <p class="eyebrow">Security Lab 01</p>
         <h1>Insecure Direct Object Reference (IDOR)</h1>
-        <p class="lab-intro">Explore how a missing ownership check can expose someone else's payroll record, and learn how server-side authorization blocks it.</p>
+        <p class="lab-intro">Read another employee's payroll record by changing one number in a request.</p>
         <div class="lab-tags">
+          <span>OWASP A01:2025 · Broken Access Control</span>
           <span>CWE-639</span>
-          <span>Broken Access Control</span>
-          <span>Interactive Lab 01</span>
         </div>
       </div>
     </section>
     <div class="container lab-layout lab-wide-layout">
       <section class="lab-panel" id="vulnerability">
-        <h2>01. The Vulnerability</h2>
-        <p>IDOR occurs when an application uses a user-supplied identifier to access a resource without checking whether the signed-in user is authorized to view it.</p>
-        <p>This demonstration uses payroll record <strong>1001</strong> as your own record. In Vulnerable mode, requesting another employee's identifier reveals their data. In Fixed mode, the same request is denied.</p>
+        <h2>01. What It Is</h2>
+        <p>IDOR happens when an app uses an ID sent by the user (like <code>slip_id=1002</code>) to fetch a record without checking that the record belongs to them. Changing the ID in the request is enough to read someone else's data. It is OWASP <strong>A01:2025 Broken Access Control</strong> and <strong>CWE-639</strong>.</p>
       </section>
 
       <section class="lab-panel" id="simulation">
-        <h2>02. Interactive IDOR Lab</h2>
-        <p>Choose a security mode and an ID delivery method, enter a record ID, then click <strong>Send Request</strong>. Changing a selection never sends a request automatically.</p>
+        <h2>02. The Line and Try It</h2>
+        <p>You are logged in as employee <strong>1001</strong>. Each payload below asks for record <strong>1002</strong>, which is not yours. Press <strong>Send Request</strong> in Vulnerable mode, then switch to <strong>Fixed</strong> and send it again.</p>
         <div class="lab-demo-container idor-demo">
           <div class="simulation-toolbar">
             <span class="field-label">Security Mode</span>
@@ -61,7 +59,7 @@
             <div class="pp-column">
               <h3 class="pp-subtitle" id="codeTitle">Vulnerable code</h3>
               <div class="code-window">
-                <div class="code-header"><span>JavaScript implementation (illustrative)</span><span>JS</span></div>
+                <div class="code-header"><span>Server code (simplified)</span><span id="codeModeBadge" class="code-status vulnerable-status">Vulnerable</span></div>
                 <pre class="pp-code"><code id="codeSample" aria-label="Code sample"></code></pre>
               </div>
               <div id="codeExplanation" class="code-explanation pp-note" aria-live="polite">
@@ -70,16 +68,16 @@
               </div>
             </div>
             <div class="pp-column">
-              <h3 class="pp-subtitle" id="vectorLabel">Choose a Request Type</h3>
+              <h3 class="pp-subtitle" id="vectorLabel">Try it: choose a payload</h3>
               <div class="pp-payloads" role="group" aria-labelledby="vectorLabel">
                 <button type="button" class="pp-payload selected" data-vector="query" aria-pressed="true">
-                  <span class="pp-num">01</span><span><strong>URL Query Parameter</strong><small>Send a numeric ID in the URL</small></span>
+                  <span class="pp-num">01</span><span><strong>ID in the URL</strong><small><code>?slip_id=1002</code></small></span>
                 </button>
                 <button type="button" class="pp-payload" data-vector="body" aria-pressed="false">
-                  <span class="pp-num">02</span><span><strong>JSON Body</strong><small>Send an ID inside a request body</small></span>
+                  <span class="pp-num">02</span><span><strong>ID in a JSON body</strong><small><code>{"slip_id": 1002}</code></small></span>
                 </button>
                 <button type="button" class="pp-payload" data-vector="token" aria-pressed="false">
-                  <span class="pp-num">03</span><span><strong>Encoded Reference</strong><small>Send a Base64-encoded record ID</small></span>
+                  <span class="pp-num">03</span><span><strong>ID hidden in Base64</strong><small><code>ref=MTAwMg==</code> (that is 1002)</small></span>
                 </button>
               </div>
               <div class="code-window">
@@ -98,41 +96,45 @@
           </div>
           <div class="result-box" id="resultPanel" aria-live="polite">
             <div class="result-heading">
-              <h3 id="resultTitle">Waiting for your request</h3>
+              <h3 id="resultTitle">No request sent yet</h3>
               <span class="pp-status neutral" id="resultStatus">NOT RUN</span>
             </div>
-            <p id="resultMessage">Choose a record and click Send Request.</p>
+            <p id="resultMessage">Press Send Request to see what the server returns.</p>
             <div class="pp-results">
-              <div class="pp-result"><span>HTTP Status</span><strong id="statusValue">—</strong></div>
-              <div class="pp-result"><span>Record Owner</span><strong id="ownerValue">—</strong></div>
-              <div class="pp-result"><span>Access Verdict</span><strong id="verdictValue">Not run</strong></div>
+              <div class="pp-result"><span>HTTP status</span><strong id="statusValue">—</strong></div>
+              <div class="pp-result"><span>Record belongs to</span><strong id="ownerValue">—</strong></div>
+              <div class="pp-result" id="verdictTile"><span>Result</span><strong id="verdictValue">—</strong></div>
             </div>
             <div class="code-window result-code-window">
-              <div class="code-header"><span>Simulated server response</span><span>JSON</span></div>
-              <pre class="response-preview"><code id="responseOutput">No request has been executed.</code></pre>
+              <div class="code-header"><span>Server response</span><span>JSON</span></div>
+              <pre class="response-preview"><code id="responseOutput">Nothing yet.</code></pre>
             </div>
-            <div class="pp-console"><strong>LAB OUTPUT</strong><span id="consoleOutput">No request has been executed.</span></div>
           </div>
-          <p class="demo-caption">Educational browser-only simulation using fictional payroll records; no real employee records or network requests are involved.</p>
+          <p class="demo-caption">Runs in your browser with made-up employees. No real requests are sent.</p>
         </div>
       </section>
       <section class="lab-panel" id="impact">
         <h2>03. Why It Matters</h2>
-        <p>Missing authorization checks can expose another user's payroll information, profile, orders, or documents even when the attacker is authenticated.</p>
+        <p>Missing authorization checks let an attacker read, and sometimes change, other people's payroll, orders or documents just by editing an ID.</p>
+        <p class="code-explanation"><strong>Real incident:</strong> In 2019, First American Financial's website served title-insurance documents by a sequential number in the URL. Changing one digit showed other people's files, exposing about 885 million records, including bank and Social Security numbers.</p>
       </section>
       <section class="lab-panel" id="fix-section">
         <h2>04. The Fix</h2>
         <p>Every resource request must verify that the authenticated user has permission to access the requested record. Base64 encoding or hiding IDs does not replace authorization.</p>
         <div class="code-window">
           <div class="code-header"><span>Object-level authorization</span><span class="code-status fixed-status">Fixed</span></div>
-          <pre><code>const record = findPaySlip(id);
-if (!record) return res.sendStatus(404);
-if (record.owner_id !== req.session.user_id) {
-  return res.sendStatus(403);
-}
-return res.json(record);</code></pre>
+          <pre class="fix-code"><code id="fixCode" aria-label="Fixed code"></code></pre>
         </div>
-        <p class="code-explanation"><strong>Security improvement:</strong> Check the record's ownership on the server before sending the response.</p>
+        <p class="code-explanation"><strong>Security improvement:</strong> Check the record's ownership on the server before sending the response. The highlighted line is the fix: the same payload now gets <strong>403 Forbidden</strong>.</p>
+      </section>
+      <section class="lab-panel" id="sources">
+        <h2>05. Sources</h2>
+        <ul class="source-list">
+          <li><a href="https://top10.owasp.org/2025/A01_2025-Broken_Access_Control/" target="_blank" rel="noopener">OWASP Top 10:2025, A01 Broken Access Control</a></li>
+          <li><a href="https://cwe.mitre.org/data/definitions/639.html" target="_blank" rel="noopener">CWE-639: Authorization Bypass Through User-Controlled Key</a></li>
+          <li><a href="https://portswigger.net/web-security/access-control/idor" target="_blank" rel="noopener">PortSwigger Web Security Academy: IDOR</a></li>
+          <li><a href="https://krebsonsecurity.com/2019/05/first-american-financial-corp-leaked-hundreds-of-millions-of-title-insurance-records/" target="_blank" rel="noopener">KrebsOnSecurity: First American Financial leak (24 May 2019)</a></li>
+        </ul>
       </section>
     </div>
   </main>
@@ -140,7 +142,7 @@ return res.json(record);</code></pre>
     <div class="container footer-content">
       <div class="footer-brand"><h2>Ghurair</h2><p>Learn web security through practical labs.</p></div>
       <nav class="footer-nav" aria-label="Footer navigation">
-        <a href="index.html">Home</a>
+        <a href="../index.html">Home</a>
         <a href="lab-1.html">IDOR</a>
         <a href="lab-2.html">Race Condition</a>
         <a href="lab-3.html">Prototype Pollution</a>

@@ -6,32 +6,40 @@ document.addEventListener("DOMContentLoaded", () => {
   const ui = window.GhurairLabUI;
   const currentUserId = 1001;
   const records = {
-    1001: { slip_id: 1001, owner_id: 1001, employee: "Yazan Kalbouneh", department: "Cybersecurity & GRC", net_pay: "$4,250.00", status: "Active Full-Time" },
-    1002: { slip_id: 1002, owner_id: 1002, employee: "Hamza Almuhisen", department: "Software Engineering", net_pay: "$5,100.00", status: "Active Contractor" },
-    1003: { slip_id: 1003, owner_id: 1003, employee: "Marcus Sterling", department: "Executive Leadership", net_pay: "$12,400.00", status: "Executive" }
+    1001: { slip_id: 1001, owner_id: 1001, employee: "Alex Morgan", department: "Cybersecurity & GRC", net_pay: "$4,250.00", status: "Active Full-Time" },
+    1002: { slip_id: 1002, owner_id: 1002, employee: "Sam Rivera", department: "Software Engineering", net_pay: "$5,100.00", status: "Active Contractor" },
+    1003: { slip_id: 1003, owner_id: 1003, employee: "Jordan Blake", department: "Executive Leadership", net_pay: "$12,400.00", status: "Executive" }
   };
+  // The attack payload: ask for a record that belongs to somebody else.
+  const attackTargetId = 1002;
   const vectors = {
     query: { title: "URL Query Parameter", prefix: "GET /api/payroll/view?slip_id=" },
     body:  { title: "JSON Body", prefix: "POST /api/payroll/view  JSON:" },
     token: { title: "Encoded Reference", prefix: "GET /api/payroll/view?ref=" }
   };
+  // Illustrative server code. The highlighted line is found by its marker comment.
   const code = {
     vulnerable: [
-      "app.all('/api/payroll/view', (req, res) => {",
+      "app.all('/api/payroll/view', requireLogin, (req, res) => {",
+      "  // The ID may arrive in the query string, JSON body or Base64 ref",
       "  const id = extractResourceId(req);",
       "  const record = findPaySlip(id);",
-      "  if (!record) return res.sendStatus(404);",
-      "  // Missing: ownership authorization",
-      "  return res.json(record); // VULNERABLE",
+      "  if (!record) {",
+      "    return res.sendStatus(404);",
+      "  }",
+      "  return res.json(record); // BUG: no ownership check",
       "});"
     ],
     fixed: [
-      "app.all('/api/payroll/view', (req, res) => {",
+      "app.all('/api/payroll/view', requireLogin, (req, res) => {",
+      "  // The ID may arrive in the query string, JSON body or Base64 ref",
       "  const id = extractResourceId(req);",
       "  const record = findPaySlip(id);",
-      "  if (!record) return res.sendStatus(404);",
-      "  if (record.owner_id !== req.session.user_id) {",
-      "    return res.sendStatus(403); // PROTECTED",
+      "  if (!record) {",
+      "    return res.sendStatus(404);",
+      "  }",
+      "  if (record.owner_id !== req.session.user_id) { // FIX",
+      "    return res.sendStatus(403);",
       "  }",
       "  return res.json(record);",
       "});"
@@ -48,25 +56,30 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderCode() {
     const fixed = mode === "fixed";
     $("codeTitle").textContent = fixed ? "Fixed code" : "Vulnerable code";
-    ui.renderCode($("codeSample"), code[mode],
-      fixed ? [] : [5], fixed ? [4, 5] : []);
+    const line = ui.findLine(code[mode], fixed ? "// FIX" : "// BUG");
+    ui.renderCode($("codeSample"), code[mode], fixed ? [] : [line], fixed ? [line] : []);
     ui.renderExplanation($("codeExplanation"), fixed,
-      "The server verifies resource ownership before disclosing a record.",
-      "The server looks up the requested record but does not verify ownership.");
+      "Fix: the server compares the record's owner with the logged-in user before replying, so other users' records get 403.",
+      "Why it is vulnerable: the server trusts the ID in the request and returns the record without checking that it belongs to the logged-in user.");
     ui.updateModes([$("vulnerableMode"), $("fixedMode")], fixed);
+    $("codeModeBadge").textContent = fixed ? "Fixed" : "Vulnerable";
+    $("codeModeBadge").className = `code-status ${fixed ? "fixed-status" : "vulnerable-status"}`;
   }
 
   function renderVector() {
     ui.updateChoices(document.querySelectorAll("[data-vector]"), "vector", vector);
     $("payloadTitle").textContent = vectors[vector].title;
     $("requestPrefix").textContent = vectors[vector].prefix;
-    $("payloadInput").value = inputFor(1001);
-    $("quickChips").replaceChildren();
+    $("payloadInput").value = inputFor(attackTargetId);
+    const label = document.createElement("span");
+    label.className = "chip-label";
+    label.textContent = "Or try:";
+    $("quickChips").replaceChildren(label);
     for (const record of Object.values(records)) {
       const chip = document.createElement("button");
       chip.type = "button";
       chip.className = "quick-chip";
-      chip.textContent = `${record.slip_id} ${record.owner_id === currentUserId ? "(You)" : "(Other user)"}`;
+      chip.textContent = `${record.slip_id} ${record.owner_id === currentUserId ? "(you)" : "(other)"}`;
       chip.addEventListener("click", () => {
         $("payloadInput").value = inputFor(record.slip_id);
         resetResult();
@@ -76,15 +89,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function resetResult() {
-    $("resultTitle").textContent = "Waiting for your request";
+    $("resultTitle").textContent = "No request sent yet";
     $("resultStatus").textContent = "NOT RUN";
     $("resultStatus").className = "pp-status neutral";
-    $("resultMessage").textContent = "Choose a record and click Send Request.";
+    $("resultMessage").textContent = "Press Send Request to see what the server returns.";
     $("statusValue").textContent = "—";
     $("ownerValue").textContent = "—";
-    $("verdictValue").textContent = "Not run";
-    $("responseOutput").textContent = "No request has been executed.";
-    $("consoleOutput").textContent = "No request has been executed.";
+    $("verdictValue").textContent = "—";
+    $("verdictTile").className = "pp-result";
+    $("responseOutput").textContent = "Nothing yet.";
   }
 
   function parseId(raw) {
@@ -114,12 +127,14 @@ document.addEventListener("DOMContentLoaded", () => {
     $("resultMessage").textContent = message;
     $("statusValue").textContent = String(httpStatus);
     $("ownerValue").textContent = record ? `#${record.owner_id}` : "—";
-    $("verdictValue").textContent = verdict;
+    $("verdictValue").textContent = exploited ? "Data leaked" : verdict === "BLOCKED" ? "Blocked" :
+      verdict === "AUTHORIZED" ? "Allowed (your record)" : verdict === "NOT FOUND" ? "No such record" : "Rejected";
+    $("verdictTile").className = `pp-result ${exploited ? "is-bad" : verdict === "BLOCKED" ? "is-good" : ""}`.trim();
     const response = httpStatus === 200
       ? { status: 200, vector, data: record }
       : { status: httpStatus, error: httpStatus === 403 ? "Forbidden" : httpStatus === 404 ? "Record not found" : "Invalid payload" };
     $("responseOutput").textContent = JSON.stringify(response, null, 2);
-    $("consoleOutput").textContent = `${vectors[vector].title} | ${mode} | HTTP ${httpStatus} | ${verdict}`;
+    $("resultPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function sendRequest() {
@@ -129,9 +144,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const record = records[targetId];
     if (!record) { showResult(404, null, "The requested record does not exist.", "NOT FOUND"); return; }
     if (mode === "fixed" && record.owner_id !== currentUserId) {
-      showResult(403, record, "Ownership check denied access to another user's record.", "BLOCKED");
+      showResult(403, record, "Same payload, but the ownership check refused it. Nothing was leaked.", "BLOCKED");
     } else if (record.owner_id !== currentUserId) {
-      showResult(200, record, "Vulnerable mode exposed another employee's private pay slip.", "IDOR EXPOSED");
+      showResult(200, record, "Another employee's private pay slip was returned. Now switch to Fixed and send the same payload.", "IDOR EXPOSED");
     } else {
       showResult(200, record, "You are permitted to access your own record.", "AUTHORIZED");
     }
@@ -147,5 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
   $("resetLab").addEventListener("click", () => {
     vector = "query"; mode = "vulnerable"; renderVector(); renderCode(); resetResult();
   });
+  ui.renderCode($("fixCode"), code.fixed, [], [ui.findLine(code.fixed, "// FIX")]);
   renderVector(); renderCode(); resetResult();
 });

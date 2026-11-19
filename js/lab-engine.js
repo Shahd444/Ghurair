@@ -43,7 +43,14 @@
     container.replaceChildren(dot, explanation);
   }
 
+  // Index of the first code line containing `marker` (e.g. "// BUG"), or -1.
+  // Lets each lab highlight its key line by marker instead of a hard-coded number.
+  function findLine(lines, marker) {
+    return lines.findIndex(line => line.includes(marker));
+  }
+
   global.GhurairLabUI = Object.freeze({
+    findLine,
     renderCode,
     updateModes,
     updateChoices,
