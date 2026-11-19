@@ -1,36 +1,26 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <meta name="description"
-        content="Explore Race Condition vulnerabilities and learn how concurrent operations affect application security.">
-
+  <meta name="description" content="Explore Race Conditions with a safe interactive single-use coupon simulation.">
   <title>Race Condition Lab | Ghurair</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../stylesheet/global.css">
   <link rel="stylesheet" href="../stylesheet/styles.css">
   <link rel="stylesheet" href="../stylesheet/labs.css">
   <link rel="stylesheet" href="../stylesheet/footer.css">
+  <script src="../js/lab-engine.js" defer></script>
+  <!-- Teammate's original logic (unmodified) -->
+  <script src="../js/lab-2.js" defer></script>
+  <!-- Ghurair visual adapter (separate file) -->
+  <script src="../js/lab2-demo.js" defer></script>
 </head>
-
 <body>
-
-  <!-- Shared Navigation -->
   <header class="site-header">
-    <a class="brand" href="index.html" aria-label="Ghurair home">
-      Ghurair
-    </a>
-
+    <a class="brand" href="index.html" aria-label="Ghurair home">Ghurair</a>
     <nav aria-label="Main navigation">
       <a href="index.html">Home</a>
       <a href="lab-1.html">IDOR</a>
@@ -40,207 +30,197 @@
   </header>
 
   <main>
-
-    <!-- Lab Header -->
+    <!-- Same hero structure as IDOR and Prototype Pollution. -->
     <section class="lab-header">
       <div class="container">
-
-        <a class="back-link" href="index.html#labs">
-          &larr; Back to Labs
-        </a>
-
+        <a class="back-link" href="index.html#labs">&larr; Back to Labs</a>
         <p class="eyebrow">Security Lab 02</p>
-
         <h1>Race Condition</h1>
-
         <p class="lab-intro">
-          Explore how concurrent requests and overlapping
-          operations can cause unexpected application behavior
-          and security vulnerabilities.
+          Learn how overlapping operations can redeem a single-use coupon more
+          than once, then compare vulnerable and fixed behavior.
         </p>
-
         <div class="lab-tags">
           <span>CWE-362</span>
           <span>Concurrency Security</span>
-          <span>Lab 02</span>
+          <span>Interactive Lab 02</span>
         </div>
-
       </div>
     </section>
 
-    <div class="container lab-layout">
-
-      <!-- Section 01: Vulnerability -->
+    <div class="container lab-layout lab-wide-layout">
+      <!-- 01: Same placement as the other two labs. -->
       <section class="lab-panel" id="vulnerability">
-
         <h2>01. The Vulnerability</h2>
-
         <p>
-          A Race Condition occurs when multiple operations
-          access or modify shared resources concurrently,
-          and the final result depends on the timing or
-          order of their execution.
+          A Race Condition occurs when the result depends on the order in which
+          concurrent operations execute. This lab uses coupon <strong>SAVE50</strong>,
+          which has a usage limit of <strong>1</strong>.
         </p>
-
         <p>
-          For example, two requests may check the same account
-          balance before either updates it, potentially allowing
-          both operations to proceed when only one should succeed.
+          In Vulnerable mode, both requests can read the coupon as available before
+          either marks it as used. In Fixed mode, the coupon is reserved before waiting.
         </p>
-
       </section>
 
-      <!-- Section 02: Vulnerable Code -->
-      <section class="lab-panel" id="vulnerable-code">
-
-        <h2>02. The Vulnerable Code</h2>
-
-        <p>
-          The team's vulnerable implementation will be
-          presented here to demonstrate how unsafe
-          concurrent operations can create security risks.
-        </p>
-
-        <div class="code-window">
-
-          <div class="code-header">
-            <span>Vulnerable Implementation</span>
-            <span class="code-status vulnerable-status">
-              Vulnerable
-            </span>
-          </div>
-
-          <pre><code>// TEAM TODO: Insert Race Condition vulnerable code.
-// Explain the unsafe check-and-update operation.</code></pre>
-
-        </div>
-
-        <p class="code-explanation">
-          <strong>Security Issue:</strong>
-          An operation may check a shared resource
-          and then modify it without ensuring that
-          another operation has not changed its state.
-        </p>
-
-      </section>
-
-      <!-- Section 03: Interactive Demo -->
+      <!-- 02: Same integrated experiment pattern as Prototype Pollution. -->
       <section class="lab-panel" id="simulation">
-
-        <h2>03. Try the Attack</h2>
-
+        <h2>02. Interactive Race Condition Lab</h2>
         <p>
-          The interactive Race Condition demonstration
-          will allow users to observe how concurrent
-          requests can affect shared application resources.
+          Choose a security mode and request scenario, then press
+          <strong>Run Test</strong>. Changing your selection never runs a test automatically.
         </p>
 
-        <div class="lab-demo-container" id="lab-demo-container">
-
-          <div class="demo-placeholder">
-
-            <h3>Race Condition Test Environment</h3>
-
-            <p>
-              This area is reserved for the team's
-              interactive Race Condition simulation.
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      <!-- Section 04: Impact -->
-      <section class="lab-panel" id="impact">
-
-        <h2>04. Why It Matters</h2>
-
-        <p>
-          Race Conditions can result in inconsistent data,
-          duplicate transactions, unauthorized actions,
-          and unintended resource modifications.
-        </p>
-
-        <p>
-          These vulnerabilities are particularly dangerous
-          in applications that process payments, inventory,
-          account balances, or other shared resources.
-        </p>
-
-      </section>
-
-      <!-- Section 05: Fix -->
-      <section class="lab-panel" id="fix-section">
-
-        <h2>05. The Fix</h2>
-
-        <p>
-          Race Conditions can be prevented by protecting
-          critical operations with appropriate synchronization,
-          atomic transactions, locking mechanisms, or
-          database constraints.
-        </p>
-
-        <div class="code-window">
-
-          <div class="code-header">
-            <span>Secure Implementation</span>
-            <span class="code-status fixed-status">
-              Fixed
+        <div class="lab-demo-container race-demo">
+          <div class="simulation-toolbar">
+            <span class="field-label">Security Mode
+              <span id="raceModeStatus" class="pp-status bad" aria-live="polite">Vulnerable</span>
             </span>
+            <div class="mode-switch" role="group" aria-label="Security mode">
+              <button type="button" id="vulnerableMode" class="mode-btn active" aria-pressed="true">Vulnerable</button>
+              <button type="button" id="fixedMode" class="mode-btn" aria-pressed="false">Fixed</button>
+            </div>
           </div>
 
-          <pre><code>// TEAM TODO: Insert the fixed implementation.
-// Ensure critical operations execute atomically.</code></pre>
+          <div class="pp-grid">
+            <div class="pp-column" id="race-code-view">
+              <h3 class="pp-subtitle" id="codeTitle">Vulnerable code</h3>
+              <div class="code-window">
+                <div class="code-header">
+                  <span>JavaScript Implementation (illustrative)</span>
+                  <span id="codeModeBadge" class="code-status vulnerable-status">Vulnerable</span>
+                </div>
+                <pre class="pp-code"><code id="codeSample" aria-label="Code sample"></code></pre>
+              </div>
+              <div class="code-explanation pp-note" id="codeExplanation" aria-live="polite">
+                <span class="pp-dot" aria-hidden="true"></span>
+                <span>The coupon is marked as used only after the waiting period.</span>
+              </div>
+            </div>
 
+            <div class="pp-column">
+              <h3 class="pp-subtitle" id="testLabel">Choose a Request Test</h3>
+              <div class="pp-payloads" role="group" aria-labelledby="testLabel">
+                <button type="button" class="pp-payload" data-test="normal" aria-pressed="false">
+                  <span class="pp-num">01</span>
+                  <span><strong>Normal Request</strong><small>One request redeems the coupon</small></span>
+                </button>
+                <button type="button" class="pp-payload" data-test="sequential" aria-pressed="false">
+                  <span class="pp-num">02</span>
+                  <span><strong>Sequential Requests</strong><small>Request B starts after A finishes</small></span>
+                </button>
+                <button type="button" class="pp-payload selected" data-test="concurrent" aria-pressed="true">
+                  <span class="pp-num">03</span>
+                  <span><strong>Concurrent Requests</strong><small>Both requests start together</small></span>
+                </button>
+              </div>
+              <p class="demo-caption"><strong>Coupon:</strong> SAVE50 &nbsp; | &nbsp; <strong>Usage limit:</strong> 1</p>
+              <div class="pp-actions rc-actions">
+                <button type="button" class="run-btn" id="runTest">&#9654; Run Test</button>
+                <button type="button" class="mode-btn" id="resetLab2">Reset Experiment</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shared full-width result panel, like Prototype Pollution. -->
+          <div class="result-box rc-result-box" id="resultPanel" aria-live="polite">
+            <div class="result-heading">
+              <h3 id="resultTitle">Waiting for your test</h3>
+              <span class="pp-status neutral" id="resultStatus">NOT RUN</span>
+            </div>
+            <p class="rc-result-message" id="resultMessage">Select a request type and press Run Test.</p>
+            <pre id="results" class="rc-result-text">No requests yet</pre>
+            <details class="rc-timeline-details" id="timelineDetails">
+              <summary>Execution Timeline <span id="eventCount">0 events</span></summary>
+              <pre id="timeline" aria-live="polite">No events yet</pre>
+            </details>
+          </div>
+          <p class="demo-caption">
+            Educational browser simulation. It does not send real HTTP requests,
+            and the fixed mode does not replace atomic server-side operations.
+          </p>
         </div>
-
-        <p class="code-explanation">
-          <strong>Security Improvement:</strong>
-          Protecting shared resources ensures that
-          concurrent requests cannot violate the
-          intended consistency rules.
-        </p>
-
       </section>
 
+      <section class="lab-panel" id="impact">
+        <h2>03. Why It Matters</h2>
+        <p>
+          Race Conditions can cause duplicate coupon redemptions, inconsistent balances,
+          oversold inventory, and other unauthorized operations when concurrent
+          requests access the same shared resource.
+        </p>
+      </section>
+
+      <section class="lab-panel" id="fix-section">
+        <h2>04. The Fix</h2>
+        <p>
+          In Fixed mode, the code <strong>reserves the coupon before the first
+          asynchronous wait</strong>. A second request then sees the coupon as used
+          and is rejected. This example isolates the fixed behavior from the
+          teammate's original <code>applyCoupon()</code> function.
+        </p>
+        <div class="code-window">
+          <div class="code-header">
+            <span>Fixed Implementation (browser simulation)</span>
+            <span class="code-status fixed-status">Fixed</span>
+          </div>
+          <pre><code>async function applyCoupon(requestId) {
+  logEvent(`${requestId} → Checking coupon`);
+
+  if (couponUsed) {
+    logEvent(`${requestId} → Rejected`);
+    return `${requestId}: Rejected`;
+  }
+
+  logEvent(`${requestId} → Coupon available`);
+
+  // FIX: Reserve before any asynchronous waiting.
+  couponUsed = true;
+  logEvent(`${requestId} → Coupon reserved`);
+
+  logEvent(`${requestId} → Waiting...`);
+  await delay(100);
+
+  logEvent(`${requestId} → Accepted`);
+  return `${requestId}: Accepted`;
+}</code></pre>
+        </div>
+        <p class="code-explanation">
+          <strong>Security Improvement:</strong> Reserving the coupon before
+          yielding execution prevents duplicate redemption in this browser simulation.
+          Real applications must enforce the usage limit on the server with an atomic
+          update, appropriate locking, or a transaction.
+        </p>
+      </section>
     </div>
 
+    <!-- Required by teammate's ORIGINAL JS; keep IDs unchanged. -->
+    <div id="original-race-controls" hidden aria-hidden="true">
+      <button type="button" id="modeBtn">Switch to Fixed Mode</button>
+      <span id="modeStatus">Vulnerable</span>
+      <button type="button" id="normalBtn">Send Normal Request</button>
+      <button type="button" id="sequentialBtn">Send Sequential Requests</button>
+      <button type="button" id="attackBtn">Send Concurrent Requests</button>
+    </div>
   </main>
 
-  <!-- Shared Footer -->
   <footer class="site-footer">
-
     <div class="container footer-content">
-
       <div class="footer-brand">
         <h2>Ghurair</h2>
         <p>Learn web security through practical labs.</p>
       </div>
-
       <nav class="footer-nav" aria-label="Footer navigation">
         <a href="index.html">Home</a>
         <a href="lab-1.html">IDOR</a>
         <a href="lab-2.html">Race Condition</a>
         <a href="lab-3.html">Prototype Pollution</a>
       </nav>
-
     </div>
-
     <div class="container footer-bottom">
-
       <p>&copy; 2026 Ghurair. Web Security Labs.</p>
-
-      <p>
-        Final project developed as part of a
-        scholarship program offered by 42 Amman.
-      </p>
-
+      <p>Final project developed as part of a scholarship program offered by 42 Amman.</p>
     </div>
-
   </footer>
-
 </body>
 </html>
