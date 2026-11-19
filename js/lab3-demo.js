@@ -5,6 +5,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const $ = id => document.getElementById(id);
+  const ui = window.GhurairLabUI;
 
   const payloads = {
     admin: {
@@ -58,30 +59,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderCode() {
     const fixed = currentMode === "fixed";
     $("codeTitle").textContent = fixed ? "Fixed code" : "Vulnerable code";
-    const sample = $("codeSample");
-    sample.replaceChildren();
-
-    (fixed ? fixedCode : vulnerableCode).forEach((line, index) => {
-      const span = document.createElement("span");
-      span.className = "pp-line";
-      if (!fixed && index === 4) span.classList.add("pp-danger");
-      if (fixed && index === 3) span.classList.add("pp-safe");
-      span.textContent = `${String(index + 1).padStart(2, "0")}  ${line}`;
-      sample.append(span);
-    });
-
-    const dot = document.createElement("span");
-    dot.className = fixed ? "pp-dot safe" : "pp-dot";
-    const message = document.createElement("span");
-    message.textContent = fixed
-      ? "The secure version rejects dangerous keys before merging."
-      : "Unsafe recursive merging may follow inherited properties.";
-    $("codeExplanation").replaceChildren(dot, message);
-
-    $("vulnerableMode").classList.toggle("active", !fixed);
-    $("fixedMode").classList.toggle("active", fixed);
-    $("vulnerableMode").setAttribute("aria-pressed", String(!fixed));
-    $("fixedMode").setAttribute("aria-pressed", String(fixed));
+    ui.renderCode($("codeSample"), fixed ? fixedCode : vulnerableCode,
+      fixed ? [] : [4], fixed ? [3] : []);
+    ui.renderExplanation($("codeExplanation"), fixed,
+      "The secure version rejects dangerous keys before merging.",
+      "Unsafe recursive merging may follow inherited properties.");
+    ui.updateModes([$("vulnerableMode"), $("fixedMode")], fixed);
   }
 
   function renderPayload() {
@@ -90,11 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("payloadPreview").textContent = JSON.stringify(
       JSON.parse(selected.json), null, 2
     );
-    document.querySelectorAll("[data-payload]").forEach(button => {
-      const active = button.dataset.payload === selectedPayload;
-      button.classList.toggle("selected", active);
-      button.setAttribute("aria-pressed", String(active));
-    });
+    ui.updateChoices(document.querySelectorAll("[data-payload]"), "payload", selectedPayload);
   }
 
   function resetResult() {

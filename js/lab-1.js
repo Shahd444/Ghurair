@@ -3,6 +3,7 @@
 // Local IDOR demonstration. This code simulates server responses; no real API is called.
 document.addEventListener("DOMContentLoaded", () => {
   const $ = id => document.getElementById(id);
+  const ui = window.GhurairLabUI;
   const currentUserId = 1001;
   const records = {
     1001: { slip_id: 1001, owner_id: 1001, employee: "Yazan Kalbouneh", department: "Cybersecurity & GRC", net_pay: "$4,250.00", status: "Active Full-Time" },
@@ -47,35 +48,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderCode() {
     const fixed = mode === "fixed";
     $("codeTitle").textContent = fixed ? "Fixed code" : "Vulnerable code";
-    $("codeSample").replaceChildren();
-    code[mode].forEach((line, index) => {
-      const span = document.createElement("span");
-      span.className = "pp-line";
-      if (!fixed && index === 5) span.classList.add("pp-danger");
-      if (fixed && (index === 4 || index === 5)) span.classList.add("pp-safe");
-      span.textContent = `${String(index + 1).padStart(2, "0")}  ${line}`;
-      $("codeSample").append(span);
-    });
-    const dot = document.createElement("span");
-    dot.className = fixed ? "pp-dot safe" : "pp-dot";
-    const explanation = document.createElement("span");
-    explanation.textContent = fixed
-      ? "The server verifies resource ownership before disclosing a record."
-      : "The server looks up the requested record but does not verify ownership.";
-    $("codeExplanation").replaceChildren(dot, explanation);
-    for (const [key, id] of [["vulnerable", "vulnerableMode"], ["fixed", "fixedMode"]]) {
-      const active = key === mode;
-      $(id).classList.toggle("active", active);
-      $(id).setAttribute("aria-pressed", String(active));
-    }
+    ui.renderCode($("codeSample"), code[mode],
+      fixed ? [] : [5], fixed ? [4, 5] : []);
+    ui.renderExplanation($("codeExplanation"), fixed,
+      "The server verifies resource ownership before disclosing a record.",
+      "The server looks up the requested record but does not verify ownership.");
+    ui.updateModes([$("vulnerableMode"), $("fixedMode")], fixed);
   }
 
   function renderVector() {
-    document.querySelectorAll("[data-vector]").forEach(button => {
-      const active = button.dataset.vector === vector;
-      button.classList.toggle("selected", active);
-      button.setAttribute("aria-pressed", String(active));
-    });
+    ui.updateChoices(document.querySelectorAll("[data-vector]"), "vector", vector);
     $("payloadTitle").textContent = vectors[vector].title;
     $("requestPrefix").textContent = vectors[vector].prefix;
     $("payloadInput").value = inputFor(1001);
