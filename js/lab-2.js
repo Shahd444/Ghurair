@@ -1,218 +1,274 @@
-"use strict";
+// SECTION 1 — ORIGINAL TEAMMATE JAVASCRIPT (UNCHANGED)
+// Wrapper only: register original click handlers after the DOM is ready.
+function installOriginalRaceLab() {
+let couponUsed = false;
+let currentMode = "vulnerable";
+let isRunning = false;
 
-// Lab 02: Race Condition on a single-use coupon.
-// Everything runs in the browser. The delay() below stands in for a slow
-// database or payment call; no network request is ever made.
+// Delay function
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Execution Timeline
+function logEvent(message) {
+  const timeline = document.getElementById("timeline");
+  timeline.textContent += message + "\n";
+}
+
+// Coupon logic: Vulnerable / Fixed
+async function applyCoupon(requestId) {
+  logEvent(`${requestId} → Checking coupon`);
+
+  if (couponUsed) {
+    logEvent(`${requestId} → Rejected`);
+    return `${requestId}: Rejected`;
+  }
+
+  logEvent(`${requestId} → Coupon available`);
+
+  // Fixed Mode: reserve before waiting
+  if (currentMode === "fixed") {
+    couponUsed = true;
+    logEvent(`${requestId} → Coupon reserved`);
+  }
+
+  logEvent(`${requestId} → Waiting...`);
+  await delay(100);
+
+  // Vulnerable Mode: update after waiting
+  if (currentMode === "vulnerable") {
+    couponUsed = true;
+  }
+
+  logEvent(`${requestId} → Accepted`);
+  return `${requestId}: Accepted`;
+}
+
+// 1. Concurrent Requests
+document.getElementById("attackBtn").addEventListener("click", async () => {
+  if (isRunning) {
+    return;
+  }
+
+  isRunning = true;
+
+  try {
+    couponUsed = false;
+    document.getElementById("timeline").textContent = "";
+
+    const results = document.getElementById("results");
+    results.textContent = "Processing requests...";
+
+    const responses = await Promise.all([
+      applyCoupon("Request A"),
+      applyCoupon("Request B")
+    ]);
+
+    results.textContent = responses.join("\n");
+  } finally {
+    isRunning = false;
+  }
+});
+
+// 2. Vulnerable / Fixed Toggle
+document.getElementById("modeBtn").addEventListener("click", () => {
+  if (isRunning) {
+    return;
+  }
+
+  if (currentMode === "vulnerable") {
+    currentMode = "fixed";
+  } else {
+    currentMode = "vulnerable";
+  }
+
+  document.getElementById("modeStatus").textContent = currentMode;
+
+  document.getElementById("modeBtn").textContent =
+    currentMode === "vulnerable"
+      ? "Switch to Fixed Mode"
+      : "Switch to Vulnerable Mode";
+});
+
+// 3. Normal Request (with isRunning protection)
+document.getElementById("normalBtn").addEventListener("click", async () => {
+  if (isRunning) {
+    return;
+  }
+
+  isRunning = true;
+
+  try {
+    couponUsed = false;
+    document.getElementById("timeline").textContent = "";
+
+    const results = document.getElementById("results");
+    results.textContent = "Processing request...";
+
+    const response = await applyCoupon("Request A");
+
+    results.textContent = response;
+  } finally {
+    isRunning = false;
+  }
+});
+
+// 4. Sequential Requests
+document.getElementById("sequentialBtn").addEventListener("click", async () => {
+  if (isRunning) {
+    return;
+  }
+
+  isRunning = true;
+
+  try {
+    couponUsed = false;
+    document.getElementById("timeline").textContent = "";
+
+    const results = document.getElementById("results");
+    results.textContent = "Processing requests...";
+
+    const responseA = await applyCoupon("Request A");
+    const responseB = await applyCoupon("Request B");
+
+    results.textContent = responseA + "\n" + responseB;
+  } finally {
+    isRunning = false;
+  }
+});
+}
+
+// SECTION 2 — GHURAIR UI ADDITIONS (END OF FILE)
+// Calls the unchanged teammate handlers through hidden compatibility controls.
 document.addEventListener("DOMContentLoaded", () => {
-  const $ = id => document.getElementById(id);
+  const root = document.querySelector(".race-demo");
+  if (!root) return;
   const ui = window.GhurairLabUI;
+  if (!ui) { console.error("Race Condition: load lab-engine.js before lab-2.js."); return; }
+  const $ = ui.get;
+  ui.ensureHiddenControls(root, [
+    ["modeBtn", "button", "Switch to Fixed Mode"],
+    ["modeStatus", "span", "Vulnerable"],
+    ["normalBtn", "button", "Send Normal Request"],
+    ["sequentialBtn", "button", "Send Sequential Requests"],
+    ["attackBtn", "button", "Send Concurrent Requests"]
+  ]);
+  if (!ui.requireIds([
+    "results", "timeline", "modeBtn", "modeStatus", "normalBtn", "sequentialBtn", "attackBtn",
+    "vulnerableMode", "fixedMode", "runTest", "resetLab2", "codeTitle", "codeSample",
+    "codeExplanation", "codeModeBadge", "fixCode", "resultTitle", "resultStatus",
+    "resultMessage", "timelineDetails", "eventCount"
+  ], "Race Condition")) return;
+  installOriginalRaceLab();
 
-  // ---- Simulated shared state: coupon SAVE50 has a usage limit of 1 ----
-  let couponUsed = false;
-  let mode = "vulnerable";
-  let selectedTest = "concurrent";
-  let running = false;
-  const timeline = [];
+  const controls = { mode: $("modeBtn"), normal: $("normalBtn"),
+    sequential: $("sequentialBtn"), concurrent: $("attackBtn") };
+  const modeButtons = [$("vulnerableMode"), $("fixedMode")];
+  const testButtons = [...root.querySelectorAll("[data-test]")];
+  const results = $("results"), timeline = $("timeline");
+  let selectedTest = "concurrent", running = false;
 
-  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-  function log(requestId, message) { timeline.push(`${requestId} → ${message}`); }
-
-  // ---- The two implementations that actually run ----
-  // They match the code shown on the page line for line.
-  const redeem = {
-    async vulnerable(requestId) {
-      log(requestId, "checking coupon");
-      if (couponUsed) {
-        log(requestId, "rejected");
-        return "Rejected";
-      }
-      log(requestId, "coupon available");
-      await delay(100);          // other request runs here
-      couponUsed = true;         // BUG: marked used too late
-      log(requestId, "coupon marked used");
-      return "Accepted";
-    },
-    async fixed(requestId) {
-      log(requestId, "checking coupon");
-      if (couponUsed) {
-        log(requestId, "rejected");
-        return "Rejected";
-      }
-      couponUsed = true;         // FIX: reserve before waiting
-      log(requestId, "coupon reserved");
-      await delay(100);
-      return "Accepted";
-    }
-  };
-
-  // ---- Code shown to the visitor (8-15 lines each) ----
-  const code = {
+  const previews = {
     vulnerable: [
-      "async function redeemCoupon(requestId) {",
-      "  log(requestId, 'checking coupon');",
-      "  if (couponUsed) {",
-      "    log(requestId, 'rejected');",
-      "    return 'Rejected';",
-      "  }",
-      "  log(requestId, 'coupon available');",
-      "  await delay(100);          // other request runs here",
-      "  couponUsed = true;         // BUG: marked used too late",
-      "  log(requestId, 'coupon marked used');",
-      "  return 'Accepted';",
+      "async function applyCoupon(requestId) {",
+      "  if (couponUsed) return `${requestId}: Rejected`;",
+      "  logEvent(`${requestId} → Coupon available`);",
+      "  await delay(100);",
+      "  couponUsed = true; // BUG: reserve after await",
+      "  return `${requestId}: Accepted`;",
       "}"
     ],
     fixed: [
-      "async function redeemCoupon(requestId) {",
-      "  log(requestId, 'checking coupon');",
-      "  if (couponUsed) {",
-      "    log(requestId, 'rejected');",
-      "    return 'Rejected';",
-      "  }",
-      "  couponUsed = true;         // FIX: reserve before waiting",
-      "  log(requestId, 'coupon reserved');",
+      "async function applyCoupon(requestId) {",
+      "  if (couponUsed) return `${requestId}: Rejected`;",
+      "  couponUsed = true; // FIX: reserve before await",
+      "  logEvent(`${requestId} → Coupon reserved`);",
       "  await delay(100);",
-      "  return 'Accepted';",
+      "  return `${requestId}: Accepted`;",
       "}"
     ]
   };
-
-  const modeButtons = [$("vulnerableMode"), $("fixedMode")];
-  const testButtons = [...document.querySelectorAll("[data-test]")];
-  const runButton = $("runTest");
-  const resetButton = $("resetLab2");
-
-  function renderCode() {
-    const fixed = mode === "fixed";
-    const line = ui.findLine(code[mode], fixed ? "// FIX" : "// BUG");
-    $("codeTitle").textContent = fixed ? "Fixed code" : "Vulnerable code";
-    $("codeModeBadge").textContent = fixed ? "Fixed" : "Vulnerable";
-    $("codeModeBadge").className = `code-status ${fixed ? "fixed-status" : "vulnerable-status"}`;
-    ui.renderCode($("codeSample"), code[mode], fixed ? [] : [line], fixed ? [line] : []);
-    ui.renderExplanation($("codeExplanation"), fixed,
-      "Fix: the coupon is reserved before the wait, so the second request sees it as used and is rejected.",
-      "Why it is vulnerable: the coupon is only marked used after the wait, so both requests pass the check first.");
-    ui.updateModes(modeButtons, fixed);
+  const explanations = {
+    fixed: "Fixed: the coupon is reserved before the first asynchronous wait.",
+    vulnerable: "Vulnerable: the coupon is reserved after the wait, allowing concurrent redemptions."
+  };
+  const activeMode = () => $("modeStatus").textContent.trim().toLowerCase() === "fixed" ? "fixed" : "vulnerable";
+  const renderCode = () => ui.renderMode(activeMode(), previews, explanations);
+  const renderSelection = () => ui.updateChoices(testButtons, "test", selectedTest);
+  function updateEventCount() {
+    const events = timeline.textContent.trim();
+    const count = !events || events === "No events yet" ? 0 : events.split("\n").filter(Boolean).length;
+    $("eventCount").textContent = `${count} ${count === 1 ? "event" : "events"}`;
   }
-
-  function updateTimeline() {
-    $("timeline").textContent = timeline.length ? timeline.join("\n") : "No events yet";
-    const n = timeline.length;
-    $("eventCount").textContent = `${n} ${n === 1 ? "event" : "events"}`;
-  }
-
   function clearResults() {
-    timeline.length = 0;
-    $("resultTitle").textContent = "No test run yet";
-    $("resultStatus").textContent = "NOT RUN";
-    $("resultStatus").className = "pp-status neutral";
-    $("resultMessage").textContent = "Press Run Test to see what happens.";
-    $("results").textContent = "No requests yet";
+    ui.resetResult({ title: "Waiting for your test", message: "Choose a request type and press Run Test." });
+    ui.setText({ results: "No requests yet", timeline: "No events yet" });
     $("timelineDetails").open = false;
-    updateTimeline();
+    updateEventCount();
   }
-
-  function lockControls(locked) {
-    running = locked;
-    for (const button of [...modeButtons, ...testButtons, runButton, resetButton]) {
-      button.disabled = locked;
-    }
+  function lockControls(value) {
+    running = value;
+    for (const button of [...modeButtons, ...testButtons, $("runTest"), $("resetLab2")]) button.disabled = value;
   }
-
-  function showResult(responses) {
-    const accepted = responses.filter(r => r.endsWith(": Accepted")).length;
-    const rejected = responses.filter(r => r.endsWith(": Rejected")).length;
-    let title, status, message, tone;
+  function showCompletedResult(text) {
+    const accepted = (text.match(/: Accepted/g) || []).length;
+    const rejected = (text.match(/: Rejected/g) || []).length;
+    let result;
     if (selectedTest === "concurrent" && accepted === 2) {
-      title = "Race condition reproduced";
-      status = "VULNERABLE";
-      message = "Both requests redeemed SAVE50, which can only be used once. Now switch to Fixed and run the same test.";
-      tone = "bad";
+      result = ["Race condition reproduced", "VULNERABLE", "Both requests redeemed SAVE50 despite its usage limit of one.", "bad"];
     } else if (selectedTest === "concurrent" && accepted === 1 && rejected === 1) {
-      title = "Duplicate redemption prevented";
-      status = "PROTECTED";
-      message = "Same payload, but only one request got the coupon. The other was rejected.";
-      tone = "good";
+      result = ["Duplicate redemption prevented", "PROTECTED", "Only one request was accepted; the other was rejected.", "good"];
     } else if (selectedTest === "sequential" && accepted === 1 && rejected === 1) {
-      title = "Second request rejected";
-      status = "COMPLETE";
-      message = "Request B started after A finished and saw that the coupon was used. The bug only appears when requests overlap.";
-      tone = "good";
+      result = ["Second request rejected", "COMPLETE", "Request B started after A finished and correctly found the coupon used.", "good"];
+    } else if (selectedTest === "normal" && accepted === 1) {
+      result = ["Coupon redeemed once", "COMPLETE", "The normal request successfully used the coupon.", "good"];
     } else {
-      title = "Coupon redeemed once";
-      status = "COMPLETE";
-      message = "The single request successfully redeemed the coupon.";
-      tone = "good";
+      result = ["Test completed", "COMPLETE", `${accepted} accepted, ${rejected} rejected.`, "neutral"];
     }
-    $("resultTitle").textContent = title;
-    $("resultStatus").textContent = status;
-    $("resultStatus").className = `pp-status ${tone}`;
-    $("resultMessage").textContent = message;
-    $("resultPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const [title, status, message, tone] = result;
+    ui.showResult({ title, status, message, tone });
+    updateEventCount();
+    // Keep preview and results in the same viewport: no automatic scrolling.
   }
 
-  async function runTest() {
-    if (running) return;
-    lockControls(true);
-    couponUsed = false;                 // fresh coupon for every test
-    timeline.length = 0;
-    updateTimeline();
-    $("resultTitle").textContent = "Running experiment";
-    $("resultStatus").textContent = "RUNNING";
-    $("resultStatus").className = "pp-status neutral";
-    $("resultMessage").textContent = "Processing the request(s)…";
-    $("results").textContent = "Processing requests...";
-    $("timelineDetails").open = true;
-
-    const handler = redeem[mode];
-    const label = (id, result) => `${id}: ${result}`;
-    let responses;
-    try {
-      if (selectedTest === "normal") {
-        responses = [label("Request A", await handler("Request A"))];
-      } else if (selectedTest === "sequential") {
-        const a = label("Request A", await handler("Request A"));
-        const b = label("Request B", await handler("Request B"));
-        responses = [a, b];
-      } else {
-        const [a, b] = await Promise.all([handler("Request A"), handler("Request B")]);
-        responses = [label("Request A", a), label("Request B", b)];
-      }
-      $("results").textContent = responses.join("\n");
-      updateTimeline();
-      showResult(responses);
-    } finally {
-      lockControls(false);
-    }
-  }
-
-  for (const button of modeButtons) {
-    button.addEventListener("click", () => {
-      if (running) return;
-      mode = button.id === "fixedMode" ? "fixed" : "vulnerable";
-      renderCode();
-      clearResults();                   // choosing a mode never runs a test
-    });
-  }
-  for (const button of testButtons) {
-    button.addEventListener("click", () => {
-      if (running) return;
-      selectedTest = button.dataset.test;
-      ui.updateChoices(testButtons, "test", selectedTest);
-      clearResults();
-    });
-  }
-  runButton.addEventListener("click", runTest);
-  resetButton.addEventListener("click", () => {
-    if (running) return;
-    mode = "vulnerable";
-    selectedTest = "concurrent";
-    renderCode();
-    ui.updateChoices(testButtons, "test", selectedTest);
-    clearResults();
+  // The teammate's code writes the result after its async request(s) finish.
+  new MutationObserver(() => {
+    if (!running) return;
+    const text = results.textContent.trim();
+    if (!/^Request A: (Accepted|Rejected)(?:\nRequest B: (Accepted|Rejected))?$/.test(text)) return;
+    const count = text.split("\n").length;
+    if ((selectedTest === "normal" && count !== 1) ||
+        (selectedTest !== "normal" && count !== 2)) return;
+    showCompletedResult(text);
+    lockControls(false);
+  }).observe(results, { childList: true, characterData: true, subtree: true });
+  new MutationObserver(updateEventCount).observe(timeline, {
+    childList: true, characterData: true, subtree: true
   });
 
-  ui.renderCode($("fixCode"), code.fixed, [], [ui.findLine(code.fixed, "// FIX")]);
-  renderCode();
-  ui.updateChoices(testButtons, "test", selectedTest);
-  clearResults();                       // never runs automatically on load
+  ui.bindModes(wanted => {
+    if (running) return;
+    if (activeMode() !== wanted) controls.mode.click();
+    renderCode(); clearResults();
+  });
+  ui.bindChoices("test", selected => {
+    if (running) return;
+    selectedTest = selected; renderSelection(); clearResults();
+  }, root);
+  $("runTest").addEventListener("click", () => {
+    if (running) return;
+    lockControls(true);
+    ui.showResult({ title: "Running experiment", status: "RUNNING",
+      message: "Processing the selected request(s)…" });
+    $("timelineDetails").open = true;
+    controls[selectedTest].click();  // The ONLY path to execute a request.
+  });
+  $("resetLab2").addEventListener("click", () => {
+    if (running) return;
+    if (activeMode() !== "vulnerable") controls.mode.click();
+    selectedTest = "concurrent"; renderCode(); renderSelection(); clearResults();
+  });
+  ui.renderFixedCode(previews.fixed);
+  renderCode(); renderSelection(); clearResults();
 });

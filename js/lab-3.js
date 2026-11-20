@@ -1,27 +1,22 @@
 "use strict";
 
-// Lab 03: Prototype Pollution.
-// The two merge functions below REALLY run on the visitor's payload. They run
-// on an isolated sandbox prototype, never on the page's real Object.prototype,
-// so the demo is safe: nothing outside the lab object can be changed.
+// Isolated sandbox simulation: never modify the browser's Object.prototype.
 document.addEventListener("DOMContentLoaded", () => {
-  const $ = id => document.getElementById(id);
   const ui = window.GhurairLabUI;
+  const $ = ui.get;
 
-  // Attacker-controlled JSON. JSON.parse() turns "__proto__" into a normal own key.
+  // SECTION 1 — LAB CORE LOGIC
   const payloads = {
     admin: { title: "Payload: make everyone an admin", json: '{"theme":"dark","__proto__":{"isAdmin":true}}' },
-    role:  { title: "Payload: change everyone's role",    json: '{"theme":"dark","__proto__":{"role":"admin"}}' },
-    debug: { title: "Payload: turn on debug mode",   json: '{"theme":"dark","__proto__":{"debug":true}}' }
+    role:  { title: "Payload: change everyone's role", json: '{"theme":"dark","__proto__":{"role":"admin"}}' },
+    debug: { title: "Payload: turn on debug mode", json: '{"theme":"dark","__proto__":{"debug":true}}' }
   };
 
-  // ---- The two implementations that actually run ----
-  // They match the code shown on the page line for line.
   function vulnerableMerge(target, source) {
     for (const key of Object.keys(source)) {
       const value = source[key];
       if (value && typeof value === "object") {
-        target[key] = target[key] || {};   // BUG: key may be "__proto__"
+        target[key] = target[key] || {}; // BUG: key may be "__proto__"
         vulnerableMerge(target[key], value);
       } else {
         target[key] = value;
@@ -43,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ---- Code shown to the visitor (8-15 lines each) ----
+  // SECTION 2 — GHURAIR UI ADDITIONS (END OF FILE)
   const code = {
     vulnerable: [
       "function merge(target, source) {",
@@ -75,52 +70,33 @@ document.addEventListener("DOMContentLoaded", () => {
       "}"
     ]
   };
-
+  const explanations = {
+    fixed: "Fix: the merge skips __proto__, constructor and prototype, so attacker input can never reach the shared prototype.",
+    vulnerable: "Why it is vulnerable: for the key \"__proto__\", target[key] already exists (it is the shared prototype), so the merge writes attacker values straight into it."
+  };
   let selectedPayload = "admin";
   let currentMode = "vulnerable";
 
-  function renderCode() {
-    const fixed = currentMode === "fixed";
-    const line = ui.findLine(code[currentMode], fixed ? "// FIX" : "// BUG");
-    $("codeTitle").textContent = fixed ? "Fixed code" : "Vulnerable code";
-    ui.renderCode($("codeSample"), code[currentMode], fixed ? [] : [line], fixed ? [line] : []);
-    ui.renderExplanation($("codeExplanation"), fixed,
-      "Fix: the merge skips __proto__, constructor and prototype, so attacker input can never reach the shared prototype.",
-      "Why it is vulnerable: for the key \"__proto__\", target[key] already exists (it is the shared prototype), so the merge writes attacker values straight into it.");
-    ui.updateModes([$("vulnerableMode"), $("fixedMode")], fixed);
-    $("codeModeBadge").textContent = fixed ? "Fixed" : "Vulnerable";
-    $("codeModeBadge").className = `code-status ${fixed ? "fixed-status" : "vulnerable-status"}`;
-  }
-
-  function renderPayload() {
-    ui.updateChoices(document.querySelectorAll("[data-payload]"), "payload", selectedPayload);
-  }
-
   function resetResult() {
-    $("resultTitle").textContent = "No payload run yet";
-    $("resultStatus").textContent = "NOT RUN";
-    $("resultStatus").className = "pp-status neutral";
-    $("resultMessage").textContent = "Press Run Payload. Then check the normal user below.";
-    $("roleValue").textContent = "user";
-    $("adminValue").textContent = "false";
-    $("debugValue").textContent = "false";
-    $("consoleOutput").textContent = "Runs on a sandbox, never on the page's real Object.prototype.";
-    for (const id of ["roleTile", "adminTile", "debugTile"]) $(id).className = "pp-result";
+    ui.resetResult({
+      title: "No payload run yet",
+      message: "Press Run Payload. Then check the normal user below.",
+      fields: {
+        roleValue: "user", adminValue: "false", debugValue: "false",
+        consoleOutput: "Runs on a sandbox, never on the page's real Object.prototype."
+      },
+      tiles: ["roleTile", "adminTile", "debugTile"]
+    });
   }
 
   function runPayload() {
-    const fixed = currentMode === "fixed";
     const selected = payloads[selectedPayload];
     const input = JSON.parse(selected.json);
-
-    // Sandbox: one shared prototype, like Object.prototype but isolated.
     const sandboxProto = {};
     const settings = Object.create(sandboxProto);
-    const user = Object.create(sandboxProto);      // a different object, same prototype
+    const user = Object.create(sandboxProto);
+    (currentMode === "fixed" ? fixedMerge : vulnerableMerge)(settings, input);
 
-    (fixed ? fixedMerge : vulnerableMerge)(settings, input);
-
-    // What the application would now see on an ordinary user object.
     const role = user.role || "user";
     const isAdmin = user.isAdmin === true;
     const debug = user.debug === true;
@@ -129,46 +105,44 @@ document.addEventListener("DOMContentLoaded", () => {
     const globalIntact = !("isAdmin" in Object.prototype) && !("role" in Object.prototype) &&
       !("debug" in Object.prototype);
 
-    $("resultTitle").textContent = polluted ? "Prototype polluted" : "Payload blocked";
-    $("resultStatus").textContent = polluted ? "VULNERABLE" : "BLOCKED";
-    $("resultStatus").className = polluted ? "pp-status bad" : "pp-status good";
-    $("resultMessage").textContent = polluted
-      ? "A normal user that never set these values now has them, because the payload changed the shared prototype. Now switch to Fixed and run the same payload."
-      : "Same payload, but the __proto__ key was skipped. The normal user is unchanged.";
-    $("roleValue").textContent = role;
-    $("adminValue").textContent = String(isAdmin);
-    $("debugValue").textContent = String(debug);
+    ui.showResult({
+      title: polluted ? "Prototype polluted" : "Payload blocked",
+      status: polluted ? "VULNERABLE" : "BLOCKED",
+      tone: polluted ? "bad" : "good",
+      message: polluted
+        ? "A normal user that never set these values now has them, because the payload changed the shared prototype. Now switch to Fixed and run the same payload."
+        : "Same payload, but the __proto__ key was skipped. The normal user is unchanged."
+    });
+    ui.setText({
+      roleValue: role,
+      adminValue: isAdmin,
+      debugValue: debug,
+      consoleOutput: `Normal setting still merged (theme = ${settings.theme}). ` +
+        `Page's real Object.prototype untouched: ${globalIntact}.` +
+        (polluted ? ` The user inherited the change from the shared prototype: ${inherited}.` : "")
+    });
     $("roleTile").className = role !== "user" ? "pp-result is-bad" : "pp-result";
     $("adminTile").className = isAdmin ? "pp-result is-bad" : "pp-result";
     $("debugTile").className = debug ? "pp-result is-bad" : "pp-result";
-    $("consoleOutput").textContent =
-      `Normal setting still merged (theme = ${settings.theme}). ` +
-      `Page's real Object.prototype untouched: ${globalIntact}.` +
-      (polluted ? ` The user inherited the change from the shared prototype: ${inherited}.` : "");
     $("resultPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  $("vulnerableMode").addEventListener("click", () => { currentMode = "vulnerable"; renderCode(); resetResult(); });
-  $("fixedMode").addEventListener("click", () => { currentMode = "fixed"; renderCode(); resetResult(); });
-  document.querySelectorAll("[data-payload]").forEach(button => {
-    button.addEventListener("click", () => {
-      if (!Object.hasOwn(payloads, button.dataset.payload)) return;
-      selectedPayload = button.dataset.payload;
-      renderPayload();
-      resetResult();
-    });
+  ui.bindModes(mode => { currentMode = mode; ui.renderMode(mode, code, explanations); resetResult(); });
+  ui.bindChoices("payload", selected => {
+    if (!Object.hasOwn(payloads, selected)) return;
+    selectedPayload = selected;
+    ui.updateChoices(document.querySelectorAll("[data-payload]"), "payload", selectedPayload);
+    resetResult();
   });
   $("runPayload").addEventListener("click", runPayload);
   $("resetLab").addEventListener("click", () => {
-    selectedPayload = "admin";
-    currentMode = "vulnerable";
-    renderPayload();
-    renderCode();
+    selectedPayload = "admin"; currentMode = "vulnerable";
+    ui.updateChoices(document.querySelectorAll("[data-payload]"), "payload", selectedPayload);
+    ui.renderMode(currentMode, code, explanations);
     resetResult();
   });
-
-  ui.renderCode($("fixCode"), code.fixed, [], [ui.findLine(code.fixed, "// FIX")]);
-  renderCode();
-  renderPayload();
+  ui.renderFixedCode(code.fixed);
+  ui.renderMode(currentMode, code, explanations);
+  ui.updateChoices(document.querySelectorAll("[data-payload]"), "payload", selectedPayload);
   resetResult();
 });
