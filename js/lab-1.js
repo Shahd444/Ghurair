@@ -2,7 +2,7 @@
 
 // Local IDOR simulation: no real HTTP requests or server-side authorization.
 document.addEventListener("DOMContentLoaded", () => {
-  const ui = window.GhurairLabUI;
+  const ui = window.BreakPointLabUI;
   const $ = ui.get;
 
   // SECTION 1 — LAB CORE LOGIC
