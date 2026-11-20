@@ -1,5 +1,5 @@
-// SECTION 1 — ORIGINAL TEAMMATE JAVASCRIPT (UNCHANGED)
-// Wrapper only: register original click handlers after the DOM is ready.
+// ===== BEGIN PROTECTED CORE: LAB 2 — DO NOT EDIT =====
+// Original teammate logic is inside a setup wrapper so DOM controls exist before binding.
 function installOriginalRaceLab() {
 let couponUsed = false;
 let currentMode = "vulnerable";
@@ -139,12 +139,14 @@ document.getElementById("sequentialBtn").addEventListener("click", async () => {
 });
 }
 
-// SECTION 2 — GHURAIR UI ADDITIONS (END OF FILE)
+// ===== END PROTECTED CORE: LAB 2 =====
+
+// ===== BEGIN BREAKPOINT UI ADDITIONS: LAB 2 — EDIT BELOW =====
 // Calls the unchanged teammate handlers through hidden compatibility controls.
 document.addEventListener("DOMContentLoaded", () => {
   const root = document.querySelector(".race-demo");
   if (!root) return;
-  const ui = window.GhurairLabUI;
+  const ui = window.BreakPointLabUI;
   if (!ui) { console.error("Race Condition: load lab-engine.js before lab-2.js."); return; }
   const $ = ui.get;
   ui.ensureHiddenControls(root, [
@@ -167,25 +169,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const modeButtons = [$("vulnerableMode"), $("fixedMode")];
   const testButtons = [...root.querySelectorAll("[data-test]")];
   const results = $("results"), timeline = $("timeline");
-  let selectedTest = "concurrent", running = false;
+  let selectedTest = "normal", running = false;
 
+  // Code previews only: the teammate's applyCoupon() above executes the test.
+  // Match the original 9-line illustrated preview and its highlighted lines.
   const previews = {
     vulnerable: [
       "async function applyCoupon(requestId) {",
-      "  if (couponUsed) return `${requestId}: Rejected`;",
-      "  logEvent(`${requestId} → Coupon available`);",
+      "  if (couponUsed) return 'Rejected';",
+      "  // Both concurrent calls can pass this check.",
+      "  logEvent(requestId + ' → Available');",
       "  await delay(100);",
-      "  couponUsed = true; // BUG: reserve after await",
-      "  return `${requestId}: Accepted`;",
+      "  // Too late: reserve after waiting.",
+      "  couponUsed = true;",
+      "  return 'Accepted';",
       "}"
     ],
     fixed: [
       "async function applyCoupon(requestId) {",
-      "  if (couponUsed) return `${requestId}: Rejected`;",
-      "  couponUsed = true; // FIX: reserve before await",
-      "  logEvent(`${requestId} → Coupon reserved`);",
+      "  if (couponUsed) return 'Rejected';",
+      "  // Reserve synchronously before any await.",
+      "  couponUsed = true;",
+      "  logEvent(requestId + ' → Reserved');",
       "  await delay(100);",
-      "  return `${requestId}: Accepted`;",
+      "  return 'Accepted';",
       "}"
     ]
   };
@@ -194,7 +201,10 @@ document.addEventListener("DOMContentLoaded", () => {
     vulnerable: "Vulnerable: the coupon is reserved after the wait, allowing concurrent redemptions."
   };
   const activeMode = () => $("modeStatus").textContent.trim().toLowerCase() === "fixed" ? "fixed" : "vulnerable";
-  const renderCode = () => ui.renderMode(activeMode(), previews, explanations);
+  const renderCode = () => ui.renderMode(activeMode(), previews, explanations, {
+    vulnerable: [4, 6],  // red: the await and the late reservation (lines 05, 07)
+    fixed: [3]           // green: the early reservation (line 04)
+  });
   const renderSelection = () => ui.updateChoices(testButtons, "test", selectedTest);
   function updateEventCount() {
     const events = timeline.textContent.trim();
@@ -267,8 +277,8 @@ document.addEventListener("DOMContentLoaded", () => {
   $("resetLab2").addEventListener("click", () => {
     if (running) return;
     if (activeMode() !== "vulnerable") controls.mode.click();
-    selectedTest = "concurrent"; renderCode(); renderSelection(); clearResults();
+    selectedTest = "normal"; renderCode(); renderSelection(); clearResults();
   });
-  ui.renderFixedCode(previews.fixed);
+  ui.renderFixedCode(previews.fixed, [3]);
   renderCode(); renderSelection(); clearResults();
 });

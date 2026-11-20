@@ -3,15 +3,9 @@
 Three interactive web-security labs you can run in the browser. In each lab you press an attack payload, watch the vulnerability happen, switch to the fixed code, and press the **same payload** again to see it blocked.
 
 **Live site:** https://shahd444.github.io/Ghurair/  
-*The URL still contains the original GitHub repository name; the project branding is now BreakPoint. The URL changes only if the repository and GitHub Pages settings are updated.*
+
 
 Built with plain HTML, CSS and JavaScript. No backend, no login, no database.
-
-
-## Project preview 
-
-[![BreakPoint — homepage showing all three security labs](assets/screenshots/homepage-4k.png)](assets/screenshots/homepage-4k.png)
-
 
 ## The labs
 
@@ -32,10 +26,7 @@ Each lab page has the same parts: what it is, the vulnerable code with the buggy
 ## Project layout
 
 ```text
-README.md            project overview and homepage screenshot
-LAB_SCREENSHOTS.md    4K lab screenshots gallery (Vulnerable and Fixed)
-assets/screenshots/  homepage and lab screenshots (3840 × 2160)
-index.html            home page with the three lab cards (must stay in the repo root for GitHub Pages)
+index.html           home page with the three lab cards (must stay in the repo root for GitHub Pages)
 pages/
   lab-1.html         IDOR
   lab-2.html         Race Condition

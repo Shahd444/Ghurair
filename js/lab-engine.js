@@ -31,14 +31,16 @@
     }
   }
 
-  function renderMode(mode, previews, explanations) {
+  function renderMode(mode, previews, explanations, highlights = {}) {
     const fixed = mode === "fixed";
     const lines = previews[mode];
     const keyLine = findLine(lines, fixed ? "// FIX" : "// BUG");
     setText({ codeTitle: fixed ? "Fixed code" : "Vulnerable code",
       codeModeBadge: fixed ? "Fixed" : "Vulnerable" });
     get("codeModeBadge").className = `code-status ${fixed ? "fixed-status" : "vulnerable-status"}`;
-    renderCode(get("codeSample"), lines, fixed ? [] : [keyLine], fixed ? [keyLine] : []);
+    renderCode(get("codeSample"), lines,
+      fixed ? [] : (highlights.vulnerable ?? [keyLine]),
+      fixed ? (highlights.fixed ?? [keyLine]) : []);
     const dot = document.createElement("span");
     dot.className = fixed ? "pp-dot safe" : "pp-dot";
     const explanation = document.createElement("span");
@@ -51,8 +53,8 @@
     }
   }
 
-  function renderFixedCode(lines) {
-    renderCode(get("fixCode"), lines, [], [findLine(lines, "// FIX")]);
+  function renderFixedCode(lines, safeLines = null) {
+    renderCode(get("fixCode"), lines, [], safeLines ?? [findLine(lines, "// FIX")]);
   }
 
   function showResult({ title, status, message, tone = "neutral" }) {
@@ -103,7 +105,7 @@
     return false;
   }
 
-  global.GhurairLabUI = Object.freeze({
+  global.BreakPointLabUI = Object.freeze({
     get, setText, renderCode, findLine, updateChoices, renderMode, renderFixedCode,
     showResult, resetResult, bindModes, bindChoices, ensureHiddenControls, requireIds
   });
