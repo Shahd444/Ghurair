@@ -2,10 +2,10 @@
 
 // Isolated sandbox simulation: never modify the browser's Object.prototype.
 document.addEventListener("DOMContentLoaded", () => {
-  const ui = window.GhurairLabUI;
+  const ui = window.BreakPointLabUI;
   const $ = ui.get;
 
-  // SECTION 1 — LAB CORE LOGIC
+  // ===== BEGIN PROTECTED CORE: LAB 3 — DO NOT EDIT =====
   const payloads = {
     admin: { title: "Payload: make everyone an admin", json: '{"theme":"dark","__proto__":{"isAdmin":true}}' },
     role:  { title: "Payload: change everyone's role", json: '{"theme":"dark","__proto__":{"role":"admin"}}' },
@@ -38,7 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // SECTION 2 — GHURAIR UI ADDITIONS (END OF FILE)
+  // ===== END PROTECTED CORE: LAB 3 =====
+
+  // ===== BEGIN BREAKPOINT UI ADDITIONS: LAB 3 — EDIT BELOW =====
   const code = {
     vulnerable: [
       "function merge(target, source) {",
