@@ -58,9 +58,8 @@
       <section class="lab-panel" id="simulation">
         <h2>02. The Line and Try It</h2>
         <p>
-          Coupon <strong>SAVE50</strong> can be used <strong>once</strong>. Press
-          <strong>Run Test</strong> with the attack selected, then switch to
-          <strong>Fixed</strong> and run it again.
+          Coupon <strong>SAVE50</strong> can be used <strong>once</strong>. Choose a request test and press <strong>Run Test</strong>. Switch to
+          <strong>Fixed</strong> to compare the result.
         </p>
 
         <div class="lab-demo-container race-demo">
@@ -89,22 +88,22 @@
             </div>
 
             <div class="pp-column">
-              <h3 class="pp-subtitle" id="testLabel">Try it: choose a payload</h3>
+              <h3 class="pp-subtitle" id="testLabel">Choose a Request Test</h3>
               <div class="pp-payloads" role="group" aria-labelledby="testLabel">
-                <button type="button" class="pp-payload selected" data-test="concurrent" aria-pressed="true">
+                <button type="button" class="pp-payload selected" data-test="normal" aria-pressed="true">
                   <span class="pp-num">01</span>
-                  <span><strong>Two requests at once</strong><small>The attack: both redeem SAVE50 together</small></span>
+                  <span><strong>Normal Request</strong><small>One request redeems the coupon</small></span>
                 </button>
                 <button type="button" class="pp-payload" data-test="sequential" aria-pressed="false">
                   <span class="pp-num">02</span>
-                  <span><strong>One after the other</strong><small>Not an attack: B starts after A finishes</small></span>
+                  <span><strong>Sequential Requests</strong><small>Request B starts after A finishes</small></span>
                 </button>
-                <button type="button" class="pp-payload" data-test="normal" aria-pressed="false">
+                <button type="button" class="pp-payload" data-test="concurrent" aria-pressed="false">
                   <span class="pp-num">03</span>
-                  <span><strong>One request</strong><small>Normal use: redeem the coupon once</small></span>
+                  <span><strong>Concurrent Requests</strong><small>Both requests start together</small></span>
                 </button>
               </div>
-                            <div class="pp-actions rc-actions">
+              <div class="pp-actions rc-actions">
                 <button type="button" class="run-btn" id="runTest">&#9654; Run Test</button>
                 <button type="button" class="mode-btn" id="resetLab2">Reset Experiment</button>
               </div>
